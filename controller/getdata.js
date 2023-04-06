@@ -3,9 +3,11 @@ const path=require('path');
 const fs=require('fs');
 // get All Services
 exports.getServices=(req,res,next)=>{
-    const page=req.query.page;
-    const size=req.query.size;
-    return Service.findAll({offset:((page-1)*size),limit:size})
+    const page=parseInt(req.query.page) ;
+    const size=parseInt(req.query.size) ;
+    console.log(page,typeof page)
+    console.log(size,typeof size)
+    return db.Service.findAll({limit:size,offset:(page-1)*size})
     .then(services=>{
         return res.status(200).json({message:"All Services",services:services})
     })
@@ -19,7 +21,7 @@ exports.getServices=(req,res,next)=>{
 // get one service with Id
 exports.getServiceId=(req,res,next)=>{
     const serviceId=req.params.serviceId;
-    return Service.findOne({where:{id:serviceId}})
+    return db.Service.findOne({where:{id:serviceId}})
     .then(service=>{
         if(!service){
             const error=new Error('Not found this service')
@@ -42,7 +44,7 @@ exports.getSTL=(req,res,next)=>{
     const page=req.query.page;
     const size=req.query.size;
 
-    STL.findAll({include:[material,Image],offset:((page-1)*size),limit:size})
+    db.STL.findAll({include:[material,Image],offset:((page-1)*size),limit:size})
     .then(stls=>{
         if(!stls){
             stls='There are no stls';
@@ -60,7 +62,7 @@ exports.getSTL=(req,res,next)=>{
 // get stl by id
 exports.getSTLId=(req,res,next)=>{
     const stlId=req.params.stlId;
-    STL.findOne({where:{id:stlId},include:[material,Image]})
+    db.STL.findOne({where:{id:stlId},include:[material,Image]})
     .then(stl=>{
         if(!stl){
             const error=new Error('This STL is not found')
@@ -81,7 +83,7 @@ exports.getSTLId=(req,res,next)=>{
 exports.getMaterials=(req,res,next)=>{
     const page=req.query.page;
     const size=req.query.size;
-    Material.findAll({offset:((page-1)-size),limit:size})
+    db.Material.findAll({offset:((page-1)-size),limit:size})
     .then(materials=>{
         if(materials.length==0){
             materials='You don\'t have any material'
@@ -100,7 +102,7 @@ exports.getMaterials=(req,res,next)=>{
 exports.getmaterialId=(req,res,next)=>{
     const materialId=req.params.matrialId;
 
-    Material.findOne({where:{id:materialId}})
+    db.Material.findOne({where:{id:materialId}})
     .then(material=>{
         if(!material){
             const error=new Error('This material is not found');
