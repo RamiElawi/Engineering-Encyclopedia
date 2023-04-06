@@ -1,9 +1,3 @@
-// const STL=require('../models/stl');
-// const Image=require('../models/image');
-// const stlProject=require('../models/project_STL');
-// const materialSTL=require('../models/materialStl');
-// const user_project = require('../models/project_STL');
-// const material=require('../models/material')
 const db=require('../models')
 const Op=require('sequelize').Op;
 
@@ -31,7 +25,7 @@ exports.addSTL=(req,res,next)=>{
         length:length,
         price:price,
         size:width*height*length,
-        stlImage:req.files.STL[0].path
+        stlImage:req.files.stlImg[0].path
     })
     .then(stl=>{
         mySTL=stl;
@@ -43,7 +37,7 @@ exports.addSTL=(req,res,next)=>{
     .then(()=>{
         if(Array.isArray(materialId)){
             materialId.forEach(element => {
-                db.materialSTL.create({
+                db.MaterialStl.create({
                     materialId:element,
                     stlId:mySTL.id
                 })
@@ -91,10 +85,7 @@ exports.updateSTL=(req,res,next)=>{
     const length=req.body.length;
     const price=req.body.price;
     const materialId=req.body.materialId;
-
-    // console.log(materialId);
-    // console.log("req.files",req.files.STL);
-
+    let mySTL;
     db.project_stl.findOne({where:{stlId:stlId,projectId:null}})
     .then(stl=>{
         if(!stl){
@@ -103,8 +94,15 @@ exports.updateSTL=(req,res,next)=>{
             throw error;
         }
         if(stl.userId!=req.userId){
-            const error=new Error('You can\'t update this STL ')
+            const error=new Error('You don\'t have authorization to update this STL')
+            error.statsuCode=422;
+            throw error;
         }
+        return db.STL.findOne({where:{id:stlId}})
+        
+    })
+    .then(stl=>{
+        mySTL=stl
         stl.stlName=stlName;
         stl.description=description;
         stl.width=width;
@@ -112,7 +110,7 @@ exports.updateSTL=(req,res,next)=>{
         stl.length=length;
         stl.price=price;
         stl.size=width*height*length;
-        if(!req.files.STL){
+        if(!req.files.stlImg){
             stl.stlImage=stl.stlImage;
         }
         else{
@@ -121,21 +119,24 @@ exports.updateSTL=(req,res,next)=>{
         return stl.save();
     })
     .then(()=>{
-        return db.materialSTL.findAll({where:{stlId:stlId}})
+        return db.MaterialStl.findAll({where:{stlId:stlId}})
     })
     .then(stl=>{
+        if(!materialId){
+            return 
+        }
         stl.forEach(ele=>{
             ele.destroy();
         })
         if(Array.isArray(materialId)){
             materialId.forEach(ele=>{
-                db.materialSTL.create({
+                db.MaterialStl.create({
                     stlId:stlId,
                     materialId:ele
                 })
             })
         }else{
-            db.materialSTL.create({
+            db.MaterialStl.create({
                 stlId:stlId,
                 materialId:materialId
             })
@@ -145,24 +146,33 @@ exports.updateSTL=(req,res,next)=>{
         return db.image.findAll({where:{stlId:stlId}})
     })
     .then((image)=>{
-        image.forEach(ele=>{
-            ele.destroy()
-        })
-        req.files.image.forEach(ele=>{
-            db.image.create({
-                path:ele.path,
-                stlId:mySTL.id
+        if(!req.files.images){
+            return 
+        }else{
+            image.forEach(ele=>{
+                require('../util/clearImage').clearImage(ele.path)
+                ele.destroy()
             })
-        })
+            req.files.images.forEach(ele=>{
+                db.image.create({
+                    path:ele.path,
+                    stlId:mySTL.id
+                })
+            })
+        }
     })
     .then(()=>{
         return db.File.findAll({where:{stlId:stlId}})
     })
-    .then(files=>{
-        files.forEach(ele=>{
+    .then(Files=>{
+        if(!req.files.file){
+            return 
+        }
+        Files.forEach(ele=>{
+            require('../util/clearImage').clearImage(ele.path)
             ele.destroy();
         })
-        req.fiels.file.forEach(ele=>{
+        req.files.file.forEach(ele=>{
             db.File.create({
                 path:ele.path
                 ,stlId:stlId
@@ -183,7 +193,7 @@ exports.updateSTL=(req,res,next)=>{
 // delete STL
 exports.deleteSTL=(req,res,next)=>{
     const stlId=req.params.stlId;
-    db.user_project.findOne({where:{stlId:stlId,projectId:null}})
+    db.project_stl.findOne({where:{stlId:stlId,projectId:null}})
     .then(stl=>{
         if(!stl){
             const error=new Error('this stl is not found')
@@ -195,7 +205,8 @@ exports.deleteSTL=(req,res,next)=>{
             error.statusCode=422;
             throw error;
         }
-        return db.image.findAll({where:{sltId:stlId}})
+        stl.destroy();
+        return db.image.findAll({where:{stlId:stlId}})
     })
     .then(images=>{
         images.forEach(ele=>{
@@ -211,8 +222,12 @@ exports.deleteSTL=(req,res,next)=>{
             require('../util/clearImage').clearImage(ele.path);
             ele.destroy();
         })
+        return db.MaterialStl.findAll({where:{stlId:stlId}})
     })
-    .then(()=>{
+    .then((mStl)=>{
+        mStl.forEach(ele=>{
+            ele.destroy();
+        })
         return db.STL.findOne({where:{id:stlId}})
     })
     .then(stl=>{
@@ -236,7 +251,7 @@ exports.getMySTL=(req,res,next)=>{
     const page=req.queery.page||1;
     let my_stl=new Array();
     let i=0;
-    db.user_project.findAll({where:{userId:req.userId}})
+    db.project_stl.findAll({where:{userId:req.userId,projectId:null}})
     .then(stls=>{
         if(!stls){
             const error=new Error('You do not have any STL');

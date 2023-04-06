@@ -30,7 +30,7 @@ module.exports=(sequelize,DataTypes)=>{
         stlId:{
             type:DataTypes.INTEGER
         }
-    },{timestapms:false,freezeTableName:true})
+    },{timestamps:false,freezeTableName:true})
     image.associate=models=>{
         image.belongsTo(models.STL)
     }

@@ -9,7 +9,6 @@ module.exports=(req,res,next)=>{
     }
     const token=authHeader.split(' ')[1];
     let dedcodeToken;
-    // console.log(token)
     try{
     dedcodeToken=jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
     }

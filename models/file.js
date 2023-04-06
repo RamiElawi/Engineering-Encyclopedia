@@ -32,7 +32,7 @@ module.exports=(sequelize,DataTypes)=>{
         projectId:{
             type:DataTypes.INTEGER
         }
-    })
+    },{timestamps:false,freezeTableName:true})
 
     File.associate=models=>{
         File.belongsTo(models.Project)

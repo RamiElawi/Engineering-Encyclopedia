@@ -55,7 +55,7 @@ module.exports=(sequelize,DataTypes)=>{
         like:{
             type:DataTypes.INTEGER
         }
-    })
+    },{timestamps:false,freezeTableName:true})
 
     return Project;
 }

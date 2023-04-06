@@ -3,7 +3,7 @@ const router=express.Router();
 const serviceController=require('../controller/service');
 const multer=require('multer');
 const isAuth=require('../util/isAuth')
-const authorization=require('../util/authorization')
+const checkRoles=require('../util/checkRole')
 
 // create storageFile to storage images
 const storageFile=multer.diskStorage({
@@ -20,10 +20,10 @@ const upload=multer({storage:storageFile});
 
 // routes
 
-router.post('/',isAuth,authorization.isAdmin,upload.single('image'),serviceController.addService);
+router.post('/addService',isAuth,checkRoles(['admin']),upload.single('image'),serviceController.addService);
 
-router.post('/:serviceId',isAuth,upload.single('image'),serviceController.updateService);
+router.post('/updateService/:serviceId',isAuth,checkRoles(['admin']),upload.single('image'),serviceController.updateService);
 
-router.delete('/deleteService/:serviceId',isAuth,serviceController.deleteService)
+router.delete('/deleteService/:serviceId',isAuth,checkRoles(['admin']),serviceController.deleteService)
 
 module.exports=router;

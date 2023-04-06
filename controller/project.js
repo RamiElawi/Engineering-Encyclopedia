@@ -1,9 +1,10 @@
-const Project=require('../models/project')
-const File=require('../models/file');
-const projectSTL=require('../models/project_STL');
-const STL=require('../models/stl')
-const material=require('../models/material');
-const Image=require('../models/image')
+// const Project=require('../models/project')
+// const File=require('../models/file');
+// const projectSTL=require('../models/project_STL');
+// const STL=require('../models/stl')
+// const material=require('../models/material');
+// const Image=require('../models/image')
+const db=require('../models')
 const {Op}=require('sequelize')
 
 // create project
@@ -21,7 +22,7 @@ exports.addProject=(req,res,next)=>{
     }
     // console.log('file       df',req.files.file)
     // console.log('image      df',req.files.image)
-    return Project.create({
+    return db.Project.create({
         projectName:projectName,
         description:description,
         price:price,
@@ -30,7 +31,7 @@ exports.addProject=(req,res,next)=>{
     .then(project=>{
         my_project=project;
         req.files.file.forEach(element => {
-            File.create({
+            db.File.create({
                 path:element.path,
                 projectId:my_project.id
             })
@@ -39,14 +40,14 @@ exports.addProject=(req,res,next)=>{
     .then(()=>{
         if(Array.isArray(stlId)){
             stlId.forEach(ele=>{
-                projectSTL.create({
+                db.project_stl.create({
                     userId:req.userId,
                     projectId:my_project.id,
                     stlId:ele
                 })
             })
         }else{
-            projectSTL.create({
+            db.project_stl.create({
                 userId:req.userId,
                 projectId:my_project.id,
                 stlId:stlId
@@ -74,7 +75,7 @@ exports.updateProject=(req,res,next)=>{
     let stlId=req.body.stlId;
     let my_stl=new Array();
     let i=0;
-    projectSTL.findAll({where:{projectId:projectId}})
+    db.project_stl.findAll({where:{projectId:projectId}})
     .then(project=>{
         if(!project.length){
             const error=new Error('This project is not found');
@@ -91,7 +92,7 @@ exports.updateProject=(req,res,next)=>{
             i++;
             ele.destroy();
         })
-        return Project.findOne({where:{id:projectId}})
+        return db.Project.findOne({where:{id:projectId}})
     })
     .then((project)=>{
         project.projectName=projectName
@@ -109,10 +110,11 @@ exports.updateProject=(req,res,next)=>{
             File.findAll({where:{projectId:projectId}})
             .then(file=>{
                 file.forEach(ele=>{
+                    require('../util/clearImage').clearImage(ele.path)
                     ele.destroy();
                 })
                 req.files.file.forEach(ele=>{
-                    File.create({
+                    db.File.create({
                         projectId:projectId,
                         path:ele.path
                     })
@@ -126,14 +128,14 @@ exports.updateProject=(req,res,next)=>{
         }
         if(Array.isArray(stlId)){
             stlId.forEach(ele=>{
-                projectSTL.create({
+                db.project_stl.create({
                     stlId:ele,
                     projectId:projectId,
                     userId:req.userId
                 })
             })
         }else{
-            projectSTL.create({
+            db.project_stl.create({
                 stlId:stlId,
                 projectId:projectId,
                 userId:req.userId
@@ -153,7 +155,7 @@ exports.updateProject=(req,res,next)=>{
 // delete project by id
 exports.deleteProject=(req,res,next)=>{
     const projectId=req.params.projectId;
-    projectSTL.findAll({where:{projectId:projectId}})
+    db.project_stl.findAll({where:{projectId:projectId}})
     .then(project=>{
         if(!project){
             const error=new Error('This project is not found')
@@ -168,7 +170,7 @@ exports.deleteProject=(req,res,next)=>{
         project.forEach(ele=>{
             ele.destroy();
         })
-        return File.findAll({where:{projectId:projectId}})
+        return db.File.findAll({where:{projectId:projectId}})
     })
     .then((files)=>{
         files.forEach(ele=>{
@@ -177,7 +179,7 @@ exports.deleteProject=(req,res,next)=>{
         })
     })
     .then(()=>{
-        return Project.findOne({where:{id:projectId}})
+        return db.Project.findOne({where:{id:projectId}})
     })
     .then((project)=>{
         require('../util/clearImage').clearImage(project.projectImage)
@@ -200,7 +202,7 @@ exports.getMyProject=(req,res,next)=>{
     const size=req.query.size;
     let my_project=new Array();
     let i=0;
-    projectSTL.findAll({where:{projectId:{[Op.not]:null},userId:req.userId},offset:((page-1)*size),limit:size})
+    db.project_stl.findAll({where:{projectId:{[Op.not]:null},userId:req.userId}})
     .then(projects=>{
         if(!projects){
             projects='You do not have any projects';
@@ -213,7 +215,7 @@ exports.getMyProject=(req,res,next)=>{
     })
     .then(my_project=>{
         let set=new Set(my_project)
-        return Project.findAll({where:{id:[...set]}})
+        return db.Project.findAll({where:{id:[...set]},offset:((page-1)*size),limit:size})
     })
     .then(projects=>{
         return res.status(200).json({projects:projects})

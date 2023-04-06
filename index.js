@@ -10,7 +10,8 @@ const commentRouter=require('./routes/comment')
 const lessonRouter=require('./routes/lesson')
 const chatRouter=require('./routes/chat');
 const messageRouter=require('./routes/message');
-const getData=require('./routes/getdata')
+const getData=require('./routes/getdata');
+const userRouter=require('./routes/user')
 
 const bodyParser=require('body-parser')
 const path=require('path')
@@ -42,6 +43,7 @@ app.use('/public',express.static(path.join(__dirname,'public')))
 //create routes
 app.use('/auth',authRoutes);
 app.use('/admin/service',serviceRouter);
+app.use('/admin/user',userRouter);
 app.use('/admin/course',courseRouter)
 app.use('/admin/material',materialRouter)
 app.use('/admin/STL',stlRouter);

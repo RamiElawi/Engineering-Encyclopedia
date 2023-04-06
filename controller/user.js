@@ -47,7 +47,8 @@ exports.getProfile=(req,res,next)=>{
 
 exports.updateRole=(req,res,next)=>{
     const role=req.body.role;
-    User.findOne({where:{id:req.userId}})
+    const userId=req.params.userId;
+    db.user.findOne({where:{id:userId}})
     .then(user=>{
         if(!user){
             const error=new Error('this user is not found');
@@ -63,6 +64,23 @@ exports.updateRole=(req,res,next)=>{
     .catch(err=>{
         if(!err.statusCode){
             err.statuscode=500;
+        }
+        next(err);
+    })
+}
+
+exports.getEmployee=(req,res,next)=>{
+    const userRole=req.params.userRole;
+    db.user.findAll({where:{role:userRole}})
+    .then(users=>{
+        if(!users.length){
+            users=`you don\'t have ${userRole}`;
+        }
+        return res.status(200).json({users:users})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
         }
         next(err);
     })

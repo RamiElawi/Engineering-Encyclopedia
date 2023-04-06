@@ -17,7 +17,23 @@ module.exports=(sequelize,DataTypes)=>{
             allowNull:false,
             autoIncrement:true,
             primaryKey:true
-        }
+        },
+        userId:{
+            type:DataTypes.INTEGER
+        },
+        stlId:{
+            type:DataTypes.INTEGER
+        },
+        projectId:{
+            type:DataTypes.INTEGER
+        },
+        stlLike:{
+            type:DataTypes.INTEGER
+        },
+        projectLike:{
+            type:DataTypes.INTEGER
+        },
+
     },{timestamps:false,freezeTableName:true})
 
     project_stl.associate=models=>{

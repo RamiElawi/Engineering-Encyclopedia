@@ -16,6 +16,9 @@ router.post('/myImage',isAuth,upload.single('image'),userController.myImage)
 
 router.get('/myProfile',isAuth,userController.getProfile)
 
-router.post('/updateRole',isAuth,userController.updateRole)
+router.post('/updateRole/:userId',isAuth,userController.updateRole)
+
+router.get('/:userRole',isAuth,userController.getEmployee)
+
 
 module.exports=router;

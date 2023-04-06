@@ -123,6 +123,7 @@ exports.getlessonId=(req,res,next)=>{
             error.statusCode=400;
             throw error
         }
+
         const videoPath=lesson.link;
         const videoSize=fs.statSync(videoPath).size;
         const CHUNK_SIZE=10**6;
@@ -138,6 +139,7 @@ exports.getlessonId=(req,res,next)=>{
         res.writeHead(206,headers);
         const videoStream=fs.createReadStream(videoPath,{start,end});
         videoStream.pipe(res);
+        res.status(200).json({lesson:lesson})
     })
     .catch(err=>{
         if(!err.statusCode){

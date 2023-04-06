@@ -18,6 +18,12 @@ module.exports=(sequelize,DataTypes)=>{
             allowNull:false,
             autoIncrement:true,
             primaryKey:true
+        },
+        materialId:{
+            type:DataTypes.INTEGER
+        },
+        stlId:{
+            type:DataTypes.INTEGER
         }
     },{timestamps:false,freezeTableName:true})
 

@@ -10,8 +10,10 @@ router.get('/STL',getDataController.getSTL);
 
 router.get('/STL/:stlId',getDataController.getSTLId);
 
-router.get('/',getDataController.getMaterials);
+router.get('/material',getDataController.getMaterials);
 
-router.get('/:materialId',getDataController.getmaterialId);
+router.get('/material/:materialId',getDataController.getmaterialId);
+
+router.get('/downloadSTLFile/:stlId',getDataController.downloadSTLFile)
 
 module.exports=router;

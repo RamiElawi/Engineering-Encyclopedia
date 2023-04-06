@@ -1,4 +1,6 @@
-
+const db=require('../models')
+const path=require('path');
+const fs=require('fs');
 // get All Services
 exports.getServices=(req,res,next)=>{
     const page=req.query.page;
@@ -112,5 +114,49 @@ exports.getmaterialId=(req,res,next)=>{
             err.statusCode=500;
         }
         next(err);
+    })
+}
+
+// download STL File
+exports.downloadSTLFile=(req,res,next)=>{
+    const stlId=req.params.stlId;
+    db.STL.findOne({where:{id:stlId}})
+    .then(stl=>{
+        if(!stl){
+            const error=new Error('this stl is not found')
+            error.statusCode=422;
+            throw error;
+        }
+        return db.File.findAll({where:{stlId:stl.id}})
+    })
+    .then(files=>{
+        let fileNames=new Array();
+        files.forEach(element => {
+            fileNames.push(element.path);
+        });
+        const filePaths=fileNames.map(name=>{
+            return path.join(__dirname,'public','stlImage',name)
+        })
+        Promise.all(
+            filePaths.map((filePath)=>{
+                return new Promise((resolve,reject)=>{
+                    const stream=fs.createReadStream(filePath)
+                    stream.on('error',(err)=>{
+                        reject(err);
+                    })
+                    stream.on('end',()=>resolve())
+                    stream.pipe(res,{end:false})
+                })
+            })
+        )
+        .then(()=>{
+            res.end();
+        })
+        .catch(err=>{
+            if(!err.statusCode){
+                err.statusCode=500;
+            }
+            next(err);
+        })
     })
 }
