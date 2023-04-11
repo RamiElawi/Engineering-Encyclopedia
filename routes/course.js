@@ -22,13 +22,7 @@ router.post('/updateCourse/:courseId',isAuth,upload.single('courseImage'),course
 
 router.delete('/deleteCourse/:courseId',isAuth,courseController.deleteCourse)
 
-router.get('/',isAuth,courseController.getCourses)
-
 router.get('/myCourses',isAuth,courseController.getMyCourses)
-
-router.get('/:courseId',isAuth,courseController.getCourseId)
-
-router.post('/rate/:courseId',isAuth,courseController.addRate)
 
 
 module.exports=router;

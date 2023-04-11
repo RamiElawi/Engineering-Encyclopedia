@@ -24,8 +24,14 @@ module.exports=(sequelize,DataTypes)=>{
         },
         rate:{
             type:DataTypes.DOUBLE
+        },
+        userId:{
+            type:DataTypes.INTEGER
+        },
+        courseId:{
+            type:DataTypes.INTEGER
         }
-    })
+    },{timestamps:false,freezeTableName:true})
 
     user_course.assocaite=models=>{
         user_course.belongsTo(models.user)

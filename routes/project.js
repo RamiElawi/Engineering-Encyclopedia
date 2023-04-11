@@ -21,9 +21,7 @@ router.delete('/deleteProject/:projectId',isAuth,projectController.deleteProject
 
 router.get('/myProject',isAuth,projectController.getMyProject);
 
-router.get('/',isAuth,projectController.getProject);
 
-router.get('/:projectId',isAuth,projectController.getPrjectId);
 
 
 module.exports=router;

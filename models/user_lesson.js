@@ -27,8 +27,14 @@ module.exports=(sequelize,DataTypes)=>{
         like:{
             type:DataTypes.BOOLEAN,
             defaultValue:0
+        },
+        lessonId:{
+            type:DataTypes.INTEGER
+        },
+        userId:{
+            type:DataTypes.INTEGER
         }
-    })
+    },{timestamps:false,freezeTableName:true})
 
     user_lesson.assocaite=models=>{
         user_lesson.belongsTo(models.user)

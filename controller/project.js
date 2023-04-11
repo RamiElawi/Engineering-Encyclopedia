@@ -1,9 +1,3 @@
-// const Project=require('../models/project')
-// const File=require('../models/file');
-// const projectSTL=require('../models/project_STL');
-// const STL=require('../models/stl')
-// const material=require('../models/material');
-// const Image=require('../models/image')
 const db=require('../models')
 const {Op}=require('sequelize')
 
@@ -101,6 +95,7 @@ exports.updateProject=(req,res,next)=>{
         if(!req.files.image){
             project.projectImage=project.projectImage
         }else{
+            require('../util/clearImage').clearImage(project.projectImage)
             project.projectImage=req.files.image[0].path
         }
         return project.save();
@@ -198,8 +193,8 @@ exports.deleteProject=(req,res,next)=>{
 
 // get my project 
 exports.getMyProject=(req,res,next)=>{
-    const page=req.query.page;
-    const size=req.query.size;
+    const page=parseInt(req.query.page);
+    const size=parseInt(req.query.size);
     let my_project=new Array();
     let i=0;
     db.project_stl.findAll({where:{projectId:{[Op.not]:null},userId:req.userId}})
@@ -215,47 +210,10 @@ exports.getMyProject=(req,res,next)=>{
     })
     .then(my_project=>{
         let set=new Set(my_project)
-        return db.Project.findAll({where:{id:[...set]},offset:((page-1)*size),limit:size})
+        return db.Project.findAll({where:{id:[...set]},offset:((page-1)*size),limit:size,include:[{model:db.File},{model:db.user},{model:db.STL}]})
     })
     .then(projects=>{
         return res.status(200).json({projects:projects})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode=500;
-        }
-        next(err);
-    })
-}
-// get All project
-exports.getProject=(req,res,next)=>{
-    const size=req.query.size;
-    const page=req.query.page;
-    return Project.findAll({offset:((page-1)*size),limit:size})
-    .then(projects=>{
-        if(!projects){
-            projects='Thee are no projects'
-        }
-        return res.status(200).json({projects:projects})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode=500;
-        }
-        next(err);
-    })
-}
-// get one project by id
-exports.getPrjectId=(req,res,next)=>{
-    const projectId=req.params.projectId;
-    Project.findOne({where:{id:projectId},include:[File,STL]})
-    .then(project=>{
-        if(!project){
-            const error=new Error('This project is not found')
-            error.statusCode=404;
-            throw error;
-        }
-        return res.status(200).json({project:project})
     })
     .catch(err=>{
         if(!err.statusCode){

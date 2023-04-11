@@ -1,6 +1,7 @@
 const router=require('express').Router();
 const userController=require('../controller/user');
 const isAuth=require('../util/isAuth');
+const checkRole=require('../util/checkRole')
 const multer=require('multer');
 const storageFile=multer.diskStorage({
     destination:(req,file,cb)=>{
@@ -12,13 +13,14 @@ const storageFile=multer.diskStorage({
     }
 })
 const upload=multer({storage:storageFile});
-router.post('/myImage',isAuth,upload.single('image'),userController.myImage)
 
-router.get('/myProfile',isAuth,userController.getProfile)
+router.post('/changeImage',isAuth,upload.single('image'),userController.changeImage)
 
-router.post('/updateRole/:userId',isAuth,userController.updateRole)
+router.get('/Profile/:userId',isAuth,userController.getProfile)
 
-router.get('/:userRole',isAuth,userController.getEmployee)
+router.post('/updateRole/:userId',isAuth,checkRole(['admin']),userController.updateRole)
+
+router.get('/:userRole',isAuth,userController.getUsers)
 
 
 module.exports=router;

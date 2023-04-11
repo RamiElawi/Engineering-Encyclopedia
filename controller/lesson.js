@@ -1,25 +1,29 @@
-const Lesson=require('../models/lesson');
-const courseUser=require('../models/userCourse');
-const Course=require('../models/course');
-const userCourse = require('../models/userCourse');
+const db=require('../models')
 const fs=require('fs');
 exports.addLesson=(req,res,next)=>{
-    const lessonName=req.body.name;
+    const lessonName=req.body.lessonName;
     const description=req.body.description;
     const courseId=req.body.courseId
     if(Object.keys(req.files).length<2){
-        const error=new Error('dont have any file to upload');
+        const error=new Error('don\'t have any file to upload');
         error.statuCode=422;
         throw error;
     }
-    Lesson.create({
+    // console.log('vedio',req.files.vedio[0].path)
+    return db.Lesson.create({
         lessonName:lessonName,
         description:description,
-        link:req.files[0].vedio.path,
-        lessonImage:req.files[0].image.path,
+        Link:req.files.vedio[0].path,
+        lessonImage:req.files.image[0].path,
         courseId:courseId
     })
     .then(lesson=>{
+        return db.user_lesson.create({
+            userId:req.userId,
+            lessonId:lesson.id
+        })
+    })
+    .then(()=>{
         return res.status(200).json({message:'lesson had been created'})
     })
     .catch(err=>{
@@ -36,7 +40,7 @@ exports.updateLesson=(req,res,next)=>{
     const description=req.body.description;
     const courseId=req.body.courseId;
 
-    Lesson.findOne({where:{id:lessonId}})
+    db.Lesson.findOne({where:{id:lessonId}})
     .then(lesson=>{
         if(!lesson){
             const error=new Error('this lesson is not found');

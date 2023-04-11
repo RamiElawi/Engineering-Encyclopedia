@@ -70,8 +70,12 @@ module.exports=(sequelize,DataTypes)=>{
         rate:{
             type:DataTypes.DOUBLE
         }
-    })
+    },{timestamps:false,freezeTableName:true})
 
+    Course.associate=models=>{
+        Course.belongsToMany(models.user,{through:models.user_course})
+        Course.hasMany(models.Lesson)
+    }
     
     return Course;
 

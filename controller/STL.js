@@ -247,8 +247,8 @@ exports.deleteSTL=(req,res,next)=>{
 
 // get STL to one user 
 exports.getMySTL=(req,res,next)=>{
-    const size=req.query.size;
-    const page=req.queery.page||1;
+    const size=parseInt(req.query.size);
+    const page=parseInt(req.query.page)||1;
     let my_stl=new Array();
     let i=0;
     db.project_stl.findAll({where:{userId:req.userId,projectId:null}})
@@ -265,7 +265,7 @@ exports.getMySTL=(req,res,next)=>{
         return my_stl;
     })
     .then((my_stl)=>{
-        return db.STL.findAll({where:{id:{[Op.in]:my_stl}},offset:((page-1)*size),limit:size,include:[db.material,db.image,db.File]})
+        return db.STL.findAll({where:{id:{[Op.in]:my_stl}},offset:((page-1)*size),limit:size,include:[{model:db.user},{model:db.image},{model:db.File},{model:db.Material}]})
     })
     .then(stls=>{
         return res.status(200).json({stls:stls})

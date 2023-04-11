@@ -37,6 +37,10 @@ module.exports=(sequelize,DataTypes)=>{
         }
     },{timestamps:false,freezeTableName:true})
     
+    Material.associate=models=>{
+        Material.belongsToMany(models.STL,{through:models.MaterialStl})
+    }
+
     return Material;
 }
 

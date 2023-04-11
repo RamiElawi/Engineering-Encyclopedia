@@ -40,6 +40,8 @@
 // });
 // module.exports=STL;
 
+const project_STL = require("./project_STL");
+
 
 
 module.exports=(sequelize,DataTypes)=>{
@@ -82,5 +84,12 @@ module.exports=(sequelize,DataTypes)=>{
         }
     },{timestamps:false,freezeTableName:true})
 
+    STL.associate=models=>{
+        STL.belongsToMany(models.Material,{through:models.MaterialStl})
+        STL.hasMany(models.image);
+        STL.hasMany(models.File);
+        STL.belongsToMany(models.user,{through:models.project_stl})
+        STL.belongsToMany(models.Project,{through:models.project_stl})
+    }
     return STL;
 }

@@ -1,7 +1,7 @@
 const User=require('../models/user');
 
-exports.myImage=(req,res,next)=>{
-    User.findOne({where:{id:req.userId}})
+exports.changeImage=(req,res,next)=>{
+    db.user.findOne({where:{id:req.userId}})
     .then(user=>{
         if(!user){
             const error=new Error('this user is not found');
@@ -28,7 +28,8 @@ exports.myImage=(req,res,next)=>{
 }
 
 exports.getProfile=(req,res,next)=>{
-    User.findOne({where:{id:req.userId}})
+    const userId=req.params.userId;
+    db.user.findOne({where:{id:userId}})
     .then(user=>{
         if(!user){
             const error=new Error('this user is not found');
@@ -69,7 +70,7 @@ exports.updateRole=(req,res,next)=>{
     })
 }
 
-exports.getEmployee=(req,res,next)=>{
+exports.getUsers=(req,res,next)=>{
     const userRole=req.params.userRole;
     db.user.findAll({where:{role:userRole}})
     .then(users=>{

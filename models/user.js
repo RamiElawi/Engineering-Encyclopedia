@@ -69,5 +69,12 @@ module.exports=(sequelize,Sequelize)=>{
         }
     },{timestamps:false});
 
+    User.associate=models=>{
+        User.belongsToMany(models.STL,{through:models.project_stl})
+        User.belongsToMany(models.Project,{through:models.project_stl})
+        User.belongsToMany(models.Course,{through:models.user_course})
+        User.belongsToMany(models.Lesson,{through:models.user_lesson})
+    }
+
     return User;
 }

@@ -38,8 +38,8 @@ module.exports=(sequelize,DataTypes)=>{
 
     project_stl.associate=models=>{
         project_stl.belongsTo(models.Project);
-        project_stl.belongsTo(models.STL);
-        project_stl.belongsTo(models.user);
+        // project_stl.belongsTo(models.STL);
+        // project_stl.belongsTo(models.user);
     }
 
     return project_stl;

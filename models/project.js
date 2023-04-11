@@ -1,34 +1,3 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const Project=sequelize.define('project',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     }
-//     ,projectName:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     }
-//     ,description:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     }
-//     ,projectImage:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     }
-//     ,price:{
-//         type:Sequelize.DOUBLE
-//     },
-//     like:{
-//         type:Sequelize.INTEGER
-//     }
-
-// });
-// module.exports=Project;
-
 module.exports=(sequelize,DataTypes)=>{
     const Project=sequelize.define('Project',{
         id:{
@@ -57,5 +26,10 @@ module.exports=(sequelize,DataTypes)=>{
         }
     },{timestamps:false,freezeTableName:true})
 
+    Project.associate=models=>{
+        Project.hasMany(models.File)
+        Project.belongsToMany(models.user,{through:models.project_stl})
+        Project.belongsToMany(models.STL,{through:models.project_stl})
+    }
     return Project;
 }

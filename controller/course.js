@@ -1,5 +1,4 @@
-const Course=require('../models/course')
-const courseUser=require('../models/userCourse');
+const db=require('../models')
 const Op=require('sequelize').Op;
 
 // create one course
@@ -15,7 +14,7 @@ exports.addCourse=(req,res,next)=>{
         error.statusCode=422;
         throw error;
     }
-    Course.create({
+    db.Course.create({
         courseName:courseName,
         description:description,
         level:level,
@@ -24,8 +23,7 @@ exports.addCourse=(req,res,next)=>{
         courseImage:req.file.path
     })
     .then(course=>{
-        console.log(course);
-        return courseUser.create({
+        return db.user_course.create({
             userId:req.userId,
             courseId:course.id
         })
@@ -51,7 +49,7 @@ exports.updateCourse=(req,res,next)=>{
     const price=req.body.price;
     const level=req.body.level; 
 
-    Course.findOne({where:{id:courseId}})
+    db.Course.findOne({where:{id:courseId}})
     .then(course=>{
         if(!course){
             const error=new Error('this course is not found');
@@ -59,7 +57,7 @@ exports.updateCourse=(req,res,next)=>{
             throw error;
         }
         correctCourse=course;
-        return courseUser.findOne({where:{courseId:courseId}})
+        return db.user_course.findOne({where:{courseId:courseId}})
     })
     .then((isEqual)=>{
         if(isEqual.userId!=req.userId){
@@ -76,6 +74,7 @@ exports.updateCourse=(req,res,next)=>{
         if(!req.file){
             correctCourse.courseImage=correctCourse.courseImage;
         }else{
+            require('../util/clearImage').clearImage(correctCourse.courseImage)
             correctCourse.courseImage=req.file.path;
         }
         return correctCourse.save();
@@ -94,7 +93,7 @@ exports.updateCourse=(req,res,next)=>{
 exports.deleteCourse=(req,res,next)=>{
     const courseId=req.params.courseId;
     let correctCourse;
-    Course.findOne({where:{id:courseId}})
+    db.Course.findOne({where:{id:courseId}})
     .then(course=>{
         if(!course){
             const error=new Error('this course is not found ')
@@ -102,7 +101,7 @@ exports.deleteCourse=(req,res,next)=>{
             throw error;
         }
         correctCourse=course;
-        return courseUser.findOne({where:{courseId:course.id}})
+        return db.user_course.findOne({where:{courseId:course.id}})
     })
     .then(isEqual=>{
         // console.log(isEqual);
@@ -111,7 +110,7 @@ exports.deleteCourse=(req,res,next)=>{
             error.statusCode=422;
             throw error;
         }
-        require('../util/clearImage').clearImage(correctCourse.path);
+        require('../util/clearImage').clearImage(correctCourse.courseImage);
         return correctCourse.destroy();
     })
     .then(()=>{
@@ -125,30 +124,14 @@ exports.deleteCourse=(req,res,next)=>{
     })
 }
 
-// get all courses
-exports.getCourses=(req,res,next)=>{
-    const page=req.query.page;
-    const size=req.query.size;
-    return Course.findAll({offset:((page-1)*size),limit:size})
-    .then(courses=>{
-        if(courses.length==0){
-            courses="there are no courses";
-        }
-        res.status(200).json({courses:courses})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode=500;
-        }
-        next(err);
-    })
-}
 
 // get all courses for user
 exports.getMyCourses=(req,res,next)=>{
+    const page=parseInt(req.query.page);
+    const size=parseInt(req.query.size);
     let i=0;
     let myCourses=new Array();
-    courseUser.findAll({where:{userId:req.userId}})
+    db.user_course.findAll({where:{userId:req.userId}})
     .then(courses=>{
         courses.forEach(element => {
             myCourses[i]=element.courseId;
@@ -157,7 +140,7 @@ exports.getMyCourses=(req,res,next)=>{
         return myCourses;
     })
     .then(myCourses=>{
-        return Course.findAll({where:{id:{[Op.in]:myCourses}}})
+        return db.Course.findAll({where:{id:{[Op.in]:myCourses}},offset:(page-1)*size,limit:size})
     })
     .then(courses=>{
         res.status(200).json({courses:courses})
@@ -169,70 +152,3 @@ exports.getMyCourses=(req,res,next)=>{
         next(err);
     })
 } 
-// get user course with Id
-exports.getCourseId=(req,res,next)=>{
-    const courseId=req.params.courseId;
-    Course.findOne({where:{id:courseId}})
-    .then(course=>{
-        if(!course){
-            const error=new Error("This course is not exists");
-            error.statusCode=422;
-            throw error;
-        }
-        return res.status(200).json({course:course})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode=500;
-        }
-        next(err);
-    })
-}
-
-// create rate
-exports.addRate=(req,res,next)=>{
-    const courseId=req.params.courseId;
-    const rate=req.body.rate;
-    let sum=0;
-    let count;
-    courseUser.findOne({where:{courseId:courseId,userId:req.userId}})
-    .then(course=>{
-        if(!course){
-            return courseUser.create({
-                rate:rate,
-                courseId:courseId,
-                userId:req.userId
-            })
-        }
-        course.rate=rate
-        return course.save();
-    })
-    .then(()=>{
-        return courseUser.findAll({where:{courseId:couserId,rate:{[Op.not]:null}}})
-    })
-    .then(courses=>{
-        courses.forEach(ele=>{
-            sum+=ele.rate;
-        })
-    })
-    .then(()=>{
-        return courseUser.count({where:{courseId:courseId,rate:{[Op.not]:null}}})
-    })
-    .then(counter=>{
-        count=counter;
-        return Course.findOne({where:{id:courseId}})
-    })
-    .then((course)=>{
-        course.rate=sum/count;
-        return course.save();
-    })
-    .then(()=>{
-        return res.status(200).json({message:'done'})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode=500;
-        }
-        next(err);
-    })
-}

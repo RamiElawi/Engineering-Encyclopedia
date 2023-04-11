@@ -32,6 +32,8 @@
 // })
 // module.exports=Lesson;
 
+const db = require(".")
+
 
 module.exports=(sequelize,DataTypes)=>{
     const Lesson=sequelize.define('Lesson',{
@@ -62,11 +64,15 @@ module.exports=(sequelize,DataTypes)=>{
         },
         unLike:{
             type:DataTypes.INTEGER
+        },
+        courseId:{
+            type:DataTypes.INTEGER
         }
-    })
+    },{timestamps:false,freezeTableName:true})
 
     Lesson.associate=models=>{
         Lesson.belongsTo(models.Course)
+        Lesson.belongsToMany(models.user,{through:models.user_lesson})
     }
     return Lesson;
 }
