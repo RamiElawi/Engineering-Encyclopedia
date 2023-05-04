@@ -1,4 +1,4 @@
-const db=require('../models')
+// const db=require('../models')
 const Op=require('sequelize').Op;
 
 // create one course

@@ -1,42 +1,5 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const Lesson=sequelize.define('lesson',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     lessonName:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     Link:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     description:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     lessonImage:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     like:{
-//         type:Sequelize.INTEGER
-//     },
-//     unLike:{
-//         type:Sequelize.INTEGER
-//     }
-// })
-// module.exports=Lesson;
-
-const db = require(".")
-
-
 module.exports=(sequelize,DataTypes)=>{
-    const Lesson=sequelize.define('Lesson',{
+    const Lesson=sequelize.define('lesson',{
         id:{
             type:DataTypes.INTEGER,
             allowNull:false,
@@ -62,18 +25,29 @@ module.exports=(sequelize,DataTypes)=>{
         like:{
             type:DataTypes.INTEGER
         },
-        unLike:{
+        courseId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'course',
+                key:'id'
+              },
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
+        },
+        lessonId:{
             type:DataTypes.INTEGER
         },
-        courseId:{
-            type:DataTypes.INTEGER
+        done:{
+            type:DataTypes.BOOLEAN,
+            defaultValue:false
         }
-    },{timestamps:false,freezeTableName:true})
-
+    })
     Lesson.associate=models=>{
-        Lesson.belongsTo(models.Course)
-        Lesson.belongsToMany(models.user,{through:models.user_lesson})
+        Lesson.belongsTo(models.course)
+        Lesson.hasMany(models.question)
+        Lesson.hasMany(models.comment)
+        Lesson.belongsToMany(models.user,{through:models.like,as:'likeUser',foreignKey:'likeableId',constraints:false,scope:{likeableType:'User'}})
+        
     }
     return Lesson;
 }
-

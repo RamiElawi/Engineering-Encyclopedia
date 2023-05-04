@@ -1,43 +1,6 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const Course=sequelize.define('course',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     courseName:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     description:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     level:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     totalTime:{
-//         type:Sequelize.STRING
-//     },
-//     price:{
-//         type:Sequelize.DOUBLE,
-//         allowNull:false
-//     },
-//     courseImage:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     rate:{
-//         type:Sequelize.DOUBLE
-//     }
-// })
-// module.exports=Course;
 
 module.exports=(sequelize,DataTypes)=>{
-    const Course=sequelize.define('Course',{
+    const Course=sequelize.define('course',{
         id:{
             type:DataTypes.INTEGER,
             allowNull:false,
@@ -69,14 +32,23 @@ module.exports=(sequelize,DataTypes)=>{
         },
         rate:{
             type:DataTypes.DOUBLE
+        },
+        userId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'user',
+                key:'id'
+              },
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
         }
-    },{timestamps:false,freezeTableName:true})
+})
 
     Course.associate=models=>{
-        Course.belongsToMany(models.user,{through:models.user_course})
-        Course.hasMany(models.Lesson)
+        Course.belongsTo(models.user);
+        Course.hasMany(models.lesson);
+        Course.belongsToMany(models.user,{through:models.courseRate})
     }
-    
-    return Course;
 
+    return Course;
 }

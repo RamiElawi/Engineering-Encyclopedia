@@ -1,5 +1,5 @@
 const jwt=require("jsonwebtoken");
-const db=require('../models');
+const db=require('../models')
 require('dotenv').config();
 
 const generateToken =(user)=>{
@@ -14,14 +14,14 @@ const generateToken =(user)=>{
             email:user.email,
             role:user.role
         },process.env.REFRESH_TOKEN_SECRET,{expiresIn:'30d'});
-        db.user_token.findOne({where:{UserId:user.id}})
+        db.refreshToken.findOne({where:{userId:user.id}})
         .then(userToken=>{
             if(userToken){
                 userToken.destroy()
             }
-            db.user_token.create({
+            db.refreshToken.create({
                 token:refreshToken,
-                UserId:user.id
+                userId:user.id
             })
         })
         return {accessToken,refreshToken};

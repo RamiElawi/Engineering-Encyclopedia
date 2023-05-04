@@ -1,22 +1,5 @@
-// const sequelize=require('../util/database');
-// const Sequelize=require('sequelize');
-// const Answer=sequelize.define('answer',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         autoIncrement:true,
-//         allowNull:false,
-//         primaryKey:true
-//     },
-//     content:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     }
-// })
-
-// module.exports=Answer;
-
 module.exports=(sequelize,DataTypes)=>{
-    const answer=sequelize.define('answer',{
+    const Answer=sequelize.define('answer',{
         id:{
             type:DataTypes.INTEGER,
             autoIncrement:true,
@@ -26,13 +9,21 @@ module.exports=(sequelize,DataTypes)=>{
         content:{
             type:DataTypes.STRING,
             allowNull:false
+        },
+        questionId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'question',
+                key:'id'
+              },
+              
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
         }
     })
-
-    answer.associate=models=>{
-        answer.belongsTo(models.question);
+    Answer.assoicate=models=>{
+        Answer.belongsTo(models.question)
+        Answer.belongsToMany(models.user,{through:models.user_answer})
     }
-
-    return answer;
-
+    return Answer;
 }

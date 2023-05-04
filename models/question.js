@@ -1,30 +1,5 @@
-// const sequelize=require('../util/database');
-// const Sequelize=require('sequelize');
-// const Question=sequelize.define('question',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     text:{
-//         type:Sequelize.STRING,
-//         allowNull:false,
-//     },
-//     rightAnswer:{
-//         type:Sequelize.INTEGER,
-//     },
-//     done:{
-//         type:Sequelize.BOOLEAN,
-//         defaultValue:false
-//     }
-// })
-
-// module.exports=Question;
-
-
 module.exports=(sequelize,DataTypes)=>{
-    const question=sequelize.define('question',{
+    const Question=sequelize.define('question',{
         id:{
             type:DataTypes.INTEGER,
             allowNull:false,
@@ -38,15 +13,22 @@ module.exports=(sequelize,DataTypes)=>{
         rightAnswer:{
             type:DataTypes.INTEGER,
         },
-        done:{
-            type:DataTypes.BOOLEAN,
-            defaultValue:false
+        lessonId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'lesson',
+                key:'id'
+              },
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
         }
     })
-
-    question.associate=models=>{
-        question.belongsTo(models.Lesson)
+    
+    Question.associate=models=>{
+        Question.belongsTo(models.lesson);
+        Question.hasMany(models.answer);
     }
 
-    return question;
+
+    return Question;
 }

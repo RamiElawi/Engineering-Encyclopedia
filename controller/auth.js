@@ -1,10 +1,10 @@
-const db=require('../models');
 const bcrypt=require('bcryptjs');
 const {validationResult}=require('express-validator')
 const jwt=require('jsonwebtoken');
 const generateToken=require('../util/generateToken');
-const user_token = require('../models/user_token');
+const User=require('../models/user')
 require('dotenv').config();
+const db=require('../models')
 
 
 exports.postSignup=(req,res,next)=>{
@@ -40,7 +40,7 @@ exports.postSignup=(req,res,next)=>{
     })
 }
 
-exports.postLogin= async(req,res,next)=>{
+exports.postLogin=(req,res,next)=>{
    const email=req.body.email;
    const password=req.body.password;
    let correctUser;
@@ -74,7 +74,7 @@ exports.postLogin= async(req,res,next)=>{
 }   
 exports.refreshToken=(req,res,next)=>{
     const refreshToken=req.body.token;
-    db.user_token.findOne({where:{token:refreshToken}})
+    db.refreshToken.findOne({where:{token:refreshToken}})
     .then(foundUser=>{
         if(!foundUser){
             return res.status(403).json({message:"User not authetication"})
@@ -101,7 +101,7 @@ exports.refreshToken=(req,res,next)=>{
 
 exports.logout=(req,res,next)=>{
     const refreshToken=req.body.token;
-    db.user_token.findOne({where:{token:refreshToken}})
+    db.refreshToken.findOne({where:{token:refreshToken}})
     .then(user=>{
         if(!user){
             res.status(403).json({message:"User Not authenticated"})

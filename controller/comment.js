@@ -1,6 +1,4 @@
-const Comment=require('../models/comment');
-const user_comment=require('../models/user_comment')
-const User=require('../models/user')
+// const db=require('../models')
 const io=require('../socket');
 
 
@@ -8,13 +6,13 @@ exports.addComment=(req,res,next)=>{
     const description=req.body.desc;
     const lessonId=req.params.lessonId;
     let ourComment;
-    Comment.create({
+    return db.Comment.create({
         description:description,
         lessonId:lessonId
     })
     .then((comment)=>{
         ourComment=comment;
-        return user_comment.create({
+        return db.user_comment.create({
             userId:req.userId,
             commentId:ourComment.id
         })
@@ -33,7 +31,7 @@ exports.addComment=(req,res,next)=>{
 exports.updateComment=(req,res,next)=>{
     const commentId=req.params.commentId;
     const desc=req.body.desc;
-    user_comment.findOne({where:{commentId:commentId}})
+    db.user_comment.findOne({where:{commentId:commentId,like:0}})
     .then(comment=>{
         if(!comment){
             const error=new Error('This comment is not found')
@@ -45,7 +43,7 @@ exports.updateComment=(req,res,next)=>{
             error.statusCode=404;
             throw error;
         }
-        return Comment.findOne({where:{id:commentId}})
+        return db.Comment.findOne({where:{id:commentId}})
     })
     .then(comment=>{
         comment.description=desc;
@@ -53,7 +51,7 @@ exports.updateComment=(req,res,next)=>{
     })
     .then((comment)=>{
         io.getIo().emit('comment',{action:'updateComment',comment:comment})
-        res.status(200).json({message:"done"})
+        res.status(200).json({message:"comment has been updated"})
     })
     .catch(err=>{
         if(!err.statusCode){
@@ -65,7 +63,7 @@ exports.updateComment=(req,res,next)=>{
 
 exports.deleteComment=(req,res,next)=>{
     const commentId=req.params.commentId;
-    user_comment.findOne({where:{commentId:commentId}})
+    db.user_comment.findOne({where:{commentId:commentId,like:0}})
     .then(comment=>{
         if(!comment){
             const error=new Error('This comment is not found')
@@ -77,7 +75,8 @@ exports.deleteComment=(req,res,next)=>{
             error.statusCode=422;
             throw error;
         }
-        return Comment.findOne({where:{id:commentId}})
+        comment.destroy();
+        return db.Comment.findOne({where:{id:commentId}})
     })
     .then((comment)=>{
         return comment.destroy();
@@ -96,7 +95,7 @@ exports.deleteComment=(req,res,next)=>{
 
 exports.getComments=(req,res,next)=>{
     const lessonId=req.params.lessonId;
-    Comment.findAll({where:{lessonId:lessonId},include:[user_comment,User]})
+    db.Comment.findAll({where:{lessonId:lessonId},include:[{model:db.user}]})
     .then(comments=>{
         if(!comments.length){
             comments='there are no comments'
@@ -116,13 +115,13 @@ exports.addReplyComment=(req,res,next)=>{
     const desc=req.body.desc;
     let ourComment;
 
-    Comment.create({
+    db.Comment.create({
         lessonId:lessonId,
         description:desc,
     })
     .then((comment)=>{
         ourComment=comment;
-        return user_comment.create({
+        return db.user_comment.create({
             userId:req.userId,
             commentId:comment.id,
             userCommentId:userCommentId
@@ -142,9 +141,16 @@ exports.addReplyComment=(req,res,next)=>{
 
 exports.getReplyComment=(req,res,next)=>{
     const userCommentId=req.params.userCommentId;
-    user_comment.findAll({where:{userCommentId:userCommentId}})
+    let ourComment=new Array();
+    db.user_comment.findAll({where:{userCommentId:userCommentId}})
     .then(comments=>{
-        return Comment.findAll({where:{id:comments},include:[User,userCommentId]})
+        comments.forEach(element => {
+            ourComment.push(element.id)
+        });
+        return ourComment
+    })
+    .then(ourComment=>{    
+            return db.Comment.findAll({where:{id:ourComment},include:[{model:db.user}]})
     })
     .then(comments=>{
         return res.status(200).json({comments:comments})

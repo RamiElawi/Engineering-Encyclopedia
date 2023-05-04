@@ -3,8 +3,6 @@ const router=express.Router();
 const authController=require('../controller/auth');
 const {body}=require('express-validator');
 const db=require('../models')
-const isAuth=require('../util/isAuth');
-
 
 router.post('/signup',
 [

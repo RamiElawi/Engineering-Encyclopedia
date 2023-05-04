@@ -14,9 +14,9 @@ const storageFile=multer.diskStorage({
 const upload=multer({storage:storageFile})
 
 // router.post('/addSTL',isAuth,upload.single('image'),stlController.addSTL)
-router.post('/addSTL',isAuth,upload.fields([{name:'stlImg'},{name:'images'},{name:'file'}]),stlController.addSTL);
+router.post('/addSTL',isAuth,upload.fields([{name:'stlImg'},{name:'image'},{name:'images'},{name:'file'}]),stlController.addSTL);
 
-router.post('/updateSTL/:stlId',isAuth,upload.fields([{name:'stlImg'},{name:'images'},{name:'file'}]),stlController.updateSTL);
+router.post('/updateSTL/:stlId',isAuth,upload.fields([{name:'stlImg'},{name:'image'},{name:'images'},{name:'file'}]),stlController.updateSTL);
 
 router.delete('/deleteSTL/:stlId',isAuth,stlController.deleteSTL);
 

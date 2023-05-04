@@ -1,14 +1,14 @@
 const router=require('express').Router();
 const questionController=require('../controller/question');
 
-router.post('/:lessonId',questionController.addQuestion);
+router.post('/addQuestion/:lessonId',questionController.addQuestion);
 
-router.post('/updateQustion/:questionId',questionController.updateQuestion);
+router.post('/updateQuestion/:questionId',questionController.updateQuestion);
 
 router.get('/:lessonId',questionController.getQuestion);
 
 router.delete('/deleteQuestion/:questionId',questionController.deleteQuestion);
 
-router.post('/answer/:questionId',questionController.chooseAnswer)
+router.post('/answers',questionController.chooseAnswer)
 
 module.exports=router;

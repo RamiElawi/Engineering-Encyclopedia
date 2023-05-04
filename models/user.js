@@ -1,80 +1,51 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
 
-// const User=sequelize.define('user',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     firstName:{
-//         type:Sequelize.STRING,
-//         allowNull:false,
-//     },
-//     lastName:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     email:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     password:{
-//         type:Sequelize.STRING,
-//         allwoNull:false
-//     },
-//     userImage:{
-//         type:Sequelize.STRING
-//     },
-//     role:{
-//         type:Sequelize.STRING,
-//         defaultValue:"USER"
-//     },
-//     // test:Sequelize.BOOLEAN
-// })
-
-// module.exports=User;
-
-module.exports=(sequelize,Sequelize)=>{
+module.exports=(sequelize,DataTypes)=>{
     const User=sequelize.define('user',{
         id:{
-            type:Sequelize.INTEGER,
+            type:DataTypes.INTEGER,
             allowNull:false,
             autoIncrement:true,
             primaryKey:true
         },
         firstName:{
-            type:Sequelize.STRING,
+            type:DataTypes.STRING,
             allowNull:false,
         },
         lastName:{
-            type:Sequelize.STRING,
+            type:DataTypes.STRING,
             allowNull:false
         },
         email:{
-            type:Sequelize.STRING,
+            type:DataTypes.STRING,
             allowNull:false
         },
         password:{
-            type:Sequelize.STRING,
+            type:DataTypes.STRING,
             allwoNull:false
         },
         userImage:{
-            type:Sequelize.STRING
+            type:DataTypes.STRING
         },
         role:{
-            type:Sequelize.STRING,
-            defaultValue:"USER"
+            type:DataTypes.STRING,
         }
-    },{timestamps:false});
-
+    },{timestamps:false,freezeTableName:true})
+    
     User.associate=models=>{
-        User.belongsToMany(models.STL,{through:models.project_stl})
-        User.belongsToMany(models.Project,{through:models.project_stl})
-        User.belongsToMany(models.Course,{through:models.user_course})
-        User.belongsToMany(models.Lesson,{through:models.user_lesson})
+        User.hasOne(models.refreshToken)
+        User.hasMany(models.service)
+        User.hasMany(models.course)
+        User.belongsToMany(models.course,{through:models.courseRate})
+        User.belongsToMany(models.answer,{through:models.user_answer})
+        User.hasMany(models.comment)
+        User.hasMany(models.STL)
+        User.hasMany(models.project)
+        User.belongsToMany(models.STL,{through:models.like,as:'likeSTL',foreignKey:'likeableId',constraints:false,scope:{likeableType:'STL'}})
+        User.belongsToMany(models.project,{through:models.like,as:'likeProject',foreignKey:'likeableId',constraints:false,scope:{likeableType:'Project'}})
+        User.belongsToMany(models.lesson,{through:models.like,as:'likeLesson',foreignKey:'likeableId',constraints:false,scope:{likeableType:'Lesson'}})
+        User.belongsToMany(models.comment,{through:models.like,as:'likeComment',foreignKey:'likeableId',constraints:false,scope:{likeableType:'Comment'}})
     }
 
-    return User;
+
+    return User
 }

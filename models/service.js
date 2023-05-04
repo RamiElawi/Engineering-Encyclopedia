@@ -1,31 +1,5 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const Service=sequelize.define('service',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     serviceName:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     description:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     serviceImage:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     }
-// })
-// module.exports=Service;
-
-
-
 module.exports=(sequelize,DataTypes)=>{
-    const Service=sequelize.define('Service',{
+    const Service=sequelize.define('service',{
         id:{
             type:DataTypes.INTEGER,
             allowNull:false,
@@ -45,7 +19,13 @@ module.exports=(sequelize,DataTypes)=>{
             allowNull:false
         },
         userId:{
-            type:DataTypes.INTEGER
+            type:DataTypes.INTEGER,
+            references:{
+                model:'user',
+                key:'id'
+            },
+            onDelete:'SET NULL',
+            onUpdate:'CASCADE'
         }
     },{timestamps:false,freezeTableName:true})
 

@@ -17,11 +17,11 @@ router.post('/addLesson',isAuth,upload.fields([{name:'vedio'},{name:'image'}]),l
 
 router.post('/updateLesson/:lessonId',isAuth,upload.fields([{name:'vedio'},{name:'image'}]),lessonController.updateLesson);
 
-router.delete('/deleteLesson/:lossonId',isAuth,lessonController.deleteLesson);
+router.delete('/deleteLesson/:lessonId',isAuth,lessonController.deleteLesson);
 
 router.get('/courseLessons/:courseId',isAuth,lessonController.getCourseLessons);
 
-// router.get('/:lessonId',isAuth,lessonController);
+router.get('/:lessonId',isAuth,lessonController.getlessonId);
 
 // router.post('/:lessonId/like',isAuth,lessonController);
 

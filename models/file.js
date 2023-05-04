@@ -1,42 +1,33 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const File=sequelize.define('file',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     path:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     }
-// })
-// module.exports=File;
-
 module.exports=(sequelize,DataTypes)=>{
-    const File=sequelize.define('File',{
+    const File=sequelize.define('file',{
         id:{
-        type:DataTypes.INTEGER,
-        allowNull:false,
-        autoIncrement:true,
-        primaryKey:true
-        },
-        path:{
-        type:DataTypes.STRING,
-        allowNull:false
-        },
-        stlId:{
-            type:DataTypes.INTEGER
-        },
-        projectId:{
-            type:DataTypes.INTEGER
-        }
+            type:DataTypes.INTEGER,
+            allowNull:false,
+            autoIncrement:true,
+            primaryKey:true
+            },
+            path:{
+            type:DataTypes.STRING,
+            allowNull:false
+            },
+            fileName:{
+                type:DataTypes.STRING,
+                allowNull:false
+            },
+            fileabelId:{
+                type:DataTypes.INTEGER,
+                allowNull:false
+            },
+            fileableType:{
+                type:DataTypes.ENUM('Project','STL'),
+                allowNull:false
+            }
     },{timestamps:false,freezeTableName:true})
 
     File.associate=models=>{
-        File.belongsTo(models.Project)
-        File.belongsTo(models.STL)
+        File.belongsTo(models.STL,{foreignKey:'fileabelId',constraints:false})
+        File.belongsTo(models.project,{foreignKey:'fileabelId',constraints:false})
     }
+
     return File;
 }

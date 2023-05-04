@@ -1,49 +1,3 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const STL=sequelize.define('stl',{
-//     id:{
-//         type: Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     stlName:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     description:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     height:{
-//         type:Sequelize.DOUBLE
-//     },
-//     width:{
-//         type:Sequelize.DOUBLE
-//     },
-//     size:{
-//         type:Sequelize.DOUBLE
-//     },
-//     length:{
-//         type:Sequelize.DOUBLE
-//     }
-//     ,price:{
-//         type:Sequelize.DOUBLE
-//     },
-//     stlImage:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     like:{
-//         type:Sequelize.INTEGER
-//     }
-// });
-// module.exports=STL;
-
-const project_STL = require("./project_STL");
-
-
-
 module.exports=(sequelize,DataTypes)=>{
     const STL=sequelize.define('STL',{
         id:{
@@ -81,15 +35,24 @@ module.exports=(sequelize,DataTypes)=>{
         },
         like:{
             type:DataTypes.INTEGER
+        },
+        image:{
+            type:DataTypes.STRING,
+            allowNull:false
         }
     },{timestamps:false,freezeTableName:true})
 
     STL.associate=models=>{
-        STL.belongsToMany(models.Material,{through:models.MaterialStl})
-        STL.hasMany(models.image);
-        STL.hasMany(models.File);
-        STL.belongsToMany(models.user,{through:models.project_stl})
-        STL.belongsToMany(models.Project,{through:models.project_stl})
+        STL.belongsToMany(models.project,{through:models.project_STL})
+        STL.belongsTo(models.user)
+        STL.belongsToMany(models.material,{through:models.material_STL})
+        STL.hasMany(models.image)
+        STL.hasMany(models.color)
+        STL.belongsToMany(models.feature,{through:models.feature_STL})
+        STL.belongsToMany(models.user,{through:models.like,as:'likeUser',foreignKey:'likeableId',constraints:false,scope:{likeableType:'User'}})
+        STL.hasMany(models.file,{foreignKey:'fileabelId',constraints:false,scope:{fileableType:'STL'}})
+        
     }
+
     return STL;
 }

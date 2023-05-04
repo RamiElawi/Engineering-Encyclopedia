@@ -1,23 +1,5 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const Comment=sequelize.define('comment',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     description:{
-//         type:Sequelize.STRING
-//     },
-//     like:{
-//         type:Sequelize.INTEGER
-//     }
-// });
-// module.exports=Comment;
-
 module.exports=(sequelize,DataTypes)=>{
-    const Comment=sequelize.define('Comment',{
+    const Comment=sequelize.define('comment',{
         id:{
             type:DataTypes.INTEGER,
             allowNull:false,
@@ -29,13 +11,42 @@ module.exports=(sequelize,DataTypes)=>{
         },
         like:{
             type:DataTypes.INTEGER
-        }
+        },
+        lessonId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'lesson',
+                key:'id'
+              },
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
+        },
+        userId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'user',
+                key:'id'
+              },
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
+        },replayCommentId:{
+          type:DataTypes.INTEGER,
+          references:{
+              model:'comment',
+              key:'id'
+            },
+            onUpdate:'CASCADE',
+            onDelete:'SET NULL'
+      }
     })
 
     Comment.associate=models=>{
-        Comment.belongsTo(models.Lesson);
+        Comment.belongsTo(models.user)
+        Comment.belongsTo(models.lesson)
+        Comment.belongsTo(models.comment,{foreignKey:'replayCommentId'})
+        Comment.belongsToMany(models.user,{through:models.like,as:'likeUser',foreignKey:'likeableId',constraints:false,scope:{likeableType:'User'}})
+
     }
 
     return Comment;
-
 }

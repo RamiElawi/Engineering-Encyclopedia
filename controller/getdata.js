@@ -1,4 +1,4 @@
-const db=require('../models')
+// const db=require('../models')
 const path=require('path');
 const fs=require('fs');
 const {Op,Sequelize}=require('sequelize')

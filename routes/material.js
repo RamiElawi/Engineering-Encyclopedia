@@ -3,11 +3,11 @@ const materialController=require('../controller/material.js');
 const isAuth=require('../util/isAuth');
 const checkRole=require('../util/checkRole')
 
-router.post('/addMaterial',isAuth,checkRole(['admin','engineer']),materialController.addMaterial);
+router.post('/addMaterial',isAuth,materialController.addMaterial);
 
-router.post('/updateMaterial/:materialId',isAuth,checkRole(['admin','engineer']),materialController.updateMaterial);
+router.post('/updateMaterial/:materialId',isAuth,materialController.updateMaterial);
 
-router.delete('/deleteMaterial/:materialId',isAuth,checkRole(['admin']),materialController.deleteMatrial);
+router.delete('/deleteMaterial/:materialId',isAuth,materialController.deleteMatrial);
 
 
 

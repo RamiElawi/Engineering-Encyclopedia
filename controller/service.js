@@ -5,7 +5,7 @@ const path=require('path')
 exports.addService=(req,res,next)=>{
     const serviceName=req.body.serviceName;
     const description=req.body.description;
-    return db.Service.findOne({where:{serviceName:serviceName}})
+    return db.service.findOne({where:{serviceName:serviceName}})
     .then(service=>{
         if(service){
             const error=new Error("this service is already exists");
@@ -18,7 +18,7 @@ exports.addService=(req,res,next)=>{
             throw error;
         }
         const pathImage=req.file.path;
-        return db.Service.create({
+        return db.service.create({
             serviceName:serviceName,
             description:description,
             serviceImage:pathImage,
@@ -40,7 +40,7 @@ exports.updateService=(req,res,next)=>{
     const serviceName=req.body.serviceName;
     const description=req.body.description;
 
-    return db.Service.findOne({where:{id:serviceId}})
+    return db.service.findOne({where:{id:serviceId}})
     .then(service=>{
         if(!service){
             const error=new Error("Not found this service")
@@ -75,7 +75,7 @@ exports.updateService=(req,res,next)=>{
 // delete one service with Id
 exports.deleteService=(req,res,next)=>{
     const serviceId=req.params.serviceId;
-    return db.Service.findOne({where:{id:serviceId}})
+    return db.service.findOne({where:{id:serviceId}})
     .then(service=>{
         if(!service){
             const error=new Error('Not found this Service');

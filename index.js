@@ -10,20 +10,20 @@ const commentRouter=require('./routes/comment')
 const lessonRouter=require('./routes/lesson')
 const chatRouter=require('./routes/chat');
 const messageRouter=require('./routes/message');
-const getData=require('./routes/getdata');
+const getDataRouter=require('./routes/getdata');
 const userRouter=require('./routes/user')
+const questionRouter=require('./routes/question')
+const featureRouter=require('./routes/feature')
 
 const bodyParser=require('body-parser')
-const path=require('path')
+const path=require('path');
 
 const db=require('./util/database');
-
-
 
 app.use((req,res,next)=>{
     res.setHeader('Access-Control-Allow-Origin','*');
     res.setHeader('Access-Control-Allow-Methods','GET,POST,DELETE,PUT,PATCH');
-    res.setHeader('Access-Control-Allow-Headers','Content-Type,Authorization',);
+    res.setHeader('Access-Control-Allow-Headers','Content-Type,Authorization,Content-Range,Accept-Ranges,Content-Length',);
     if(req.method === 'OPTIONS' ){
         return res.sendStatus(200)
     }
@@ -52,7 +52,9 @@ app.use('/admin/Lesson',lessonRouter)
 app.use('/Comment',commentRouter)
 app.use('/chat',chatRouter)
 app.use('/message',messageRouter)
-app.use('/getData',getData)
+app.use('/getData',getDataRouter)
+app.use('/question',questionRouter)
+app.use('/feature',featureRouter)
 // handling error
 app.use((error,req,res,next)=>{
     console.log(error);
@@ -69,6 +71,7 @@ app.use((error,req,res,next)=>{
 
 
 // connect database with server
+
 db
 .sync()
 .then(()=>{
@@ -77,33 +80,6 @@ db
     const io=require('./socket').init(server);
     io.on('connection',socket=>{
         console.log('socket is connection')
-
-        socket.on('setup',(userData)=>{
-            socket.join(userData.id);
-            console.log(userData.id)
-            socket.emit('connected');
-        })
-
-        socket.on('join chat',(room)=>{
-            socket.join(room);
-            console.log('user joined Room',room)
-        })
-
-        socket.on('typing',(room)=>socket.in(room).emit('typing'))
-        socket.on('stop typing',(room)=>socket.in(room).emit('stop typing'))
-
-        socket.on('new message',(newMessageRecievied)=>{
-            let chat=newMessageRecievied.chat;
-            if(!chat.users) return console.log('chat .users not define');
-            chat.users.forEach(user=>{
-                if(user.id==newMessageRecievied.userId.id) return ;
-                socket.in(user.id).emit('message recieved',newMessageRecievied)
-            })
-        })
-        socket.off('setup',()=>{
-            console.log('user disconnected');
-            socket.leave(userData.id);
-        })
     })
 })
 .catch(err=>console.log(err))

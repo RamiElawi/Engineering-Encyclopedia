@@ -1,7 +1,4 @@
-const Chat=require('../models/chat');
-const Op=require('sequelize');
-const User=require('../models/user')
-const Message=require('../models/message')
+// const db=require('../models')
 
 exports.createChat=(req,res,next)=>{
     const userId=req.body.userId;
@@ -9,21 +6,21 @@ exports.createChat=(req,res,next)=>{
     let ourChat;
     console.log('req.userId',userId_2)
     console.log('userId',userId)
-    Chat.findOne({where:{firstUserId:[userId,userId_2],secondUserId:[userId,userId_2]}})
+    db.chat.findOne({where:{userId:[userId,userId_2],userId1:[userId,userId_2]}})
     .then(isChat=>{
         if(!isChat){
-            isChat=Chat.create({
-                firstUserId:userId,
-                secondUserId:userId_2
+            return db.chat.create({
+                userId:userId,
+                userId1:userId_2
             })
         }
         return isChat;
     })
     .then(isChat=>{
-        return Chat.findOne({where:{id:isChat.id},include:Message})
+        return db.chat.findOne({where:{id:isChat.id},include:[{model:db.Message},{model:db.user}]})
     }).then(chat=>{
         ourChat=chat
-        return User.findAll({where:{id:[chat.firstUserId,chat.secondUserId]}})
+        return db.user.findAll({where:{id:[chat.userId,chat.userId1]}})
     })
     .then(users=>{
         return res.status(200).json({chat:ourChat,users:users})

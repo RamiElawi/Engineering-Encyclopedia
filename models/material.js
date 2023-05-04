@@ -1,26 +1,5 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-// const Material=sequelize.define('material',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     },
-//     materialName:{
-//         type:Sequelize.STRING,
-//         allowNull:false
-//     },
-//     density:{
-//         type:Sequelize.DOUBLE,
-//         allowNull:false
-//     }
-// })
-// module.exports=Material;
-
-
 module.exports=(sequelize,DataTypes)=>{
-    const Material=sequelize.define('Material',{
+    const material=sequelize.define('material',{
         id:{
             type:DataTypes.INTEGER,
             allowNull:false,
@@ -36,11 +15,10 @@ module.exports=(sequelize,DataTypes)=>{
             allowNull:false
         }
     },{timestamps:false,freezeTableName:true})
-    
-    Material.associate=models=>{
-        Material.belongsToMany(models.STL,{through:models.MaterialStl})
+
+    material.associate=models=>{
+        material.belongsToMany(models.STL,{through:models.material_STL})
     }
 
-    return Material;
+    return material
 }
-

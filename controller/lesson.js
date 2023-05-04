@@ -1,9 +1,10 @@
-const db=require('../models')
+// const db=require('../models')
 const fs=require('fs');
 exports.addLesson=(req,res,next)=>{
     const lessonName=req.body.lessonName;
     const description=req.body.description;
     const courseId=req.body.courseId
+    console.log(req.files)
     if(Object.keys(req.files).length<2){
         const error=new Error('don\'t have any file to upload');
         error.statuCode=422;
@@ -40,22 +41,33 @@ exports.updateLesson=(req,res,next)=>{
     const description=req.body.description;
     const courseId=req.body.courseId;
 
-    db.Lesson.findOne({where:{id:lessonId}})
+    db.user_lesson.findOne({where:{lessonId:lessonId}})
     .then(lesson=>{
         if(!lesson){
             const error=new Error('this lesson is not found');
-            error.statuCode=404;
+            error.statusCode=404;
             throw error;
         }
-        if(!req.files[0].vedio){
-            lesson.link=lesson.link;
-        }else{
-            lesson.link=req.files[0].link.path
+        if(lesson.userId!=req.userId){
+            const error=new Error('You don\'t have authorization to update this lesson');
+            error.statuCode=422;
+            throw error;
         }
-        if(!req.files[0].image){
+        return db.Lesson.findOne({where:{id:lessonId}})
+    })
+    .then(lesson=>{
+        console.log(req.files)
+        if(!req.files.vedio){
+            lesson.Link=lesson.Link;
+        }else{
+            require('../util/clearImage').clearImage(lesson.Link)
+            lesson.link=req.files.vedio[0].path
+        }
+        if(!req.files.image){
             lesson.lessonImage=lesson.lessonImage
         }else{
-            lesson.lessonImage=req.files[0].image.path
+            require('../util/clearImage').clearImage(lesson.lessonImage)
+            lesson.lessonImage=req.files.image[0].path
         }
         lesson.lessonName=lessonName;
         lesson.description=description;
@@ -69,19 +81,35 @@ exports.updateLesson=(req,res,next)=>{
         if(!err.statuCode){
             err.statuCode=500;
         }
+        next(err)
     })
 }
 
 exports.deleteLesson=(req,res,next)=>{
     const lessonId=req.params.lessonId;
-    Lesson.findOne({where:{id:lessonId}})
+    db.user_lesson.findOne({where:{lessonId:lessonId}})
+    .then(lesson=>{
+        if(!lesson){
+            const error=new Error('this lesson is not found');
+            error.statusCode=404;
+            throw error;
+        }
+        if(lesson.userId!=req.userId){
+            const error=new Error('You don\'t have authorization to delete this lesson');
+            error.statuCode=422;
+            throw error;
+        }
+        lesson.destroy();
+        return db.Lesson.findOne({where:{id:lessonId}})
+    })
     .then(lesson=>{
         if(!lesson){
             const error=new Error('this lesson is not found')
             error.statusCode=404;
             throw error;
         }
-        require('../util/clearImage').clearImage(lesson.path);
+        require('../util/clearImage').clearImage(lesson.Link);
+        require('../util/clearImage').clearImage(lesson.lessonImage);
         return lesson.destroy();
     })
     .then(()=>{
@@ -97,7 +125,7 @@ exports.deleteLesson=(req,res,next)=>{
 
 exports.getCourseLessons=(req,res,next)=>{
     const courseId=req.params.courseId;
-    Lesson.findAll({where:{courseId:courseId}})
+    db.Lesson.findAll({where:{courseId:courseId}})
     .then(lessons=>{
         if(!lessons.length){
             lessons='There are no lessons for this course';
@@ -115,7 +143,7 @@ exports.getCourseLessons=(req,res,next)=>{
 exports.getlessonId=(req,res,next)=>{
     const lessonId=req.params.lessonId;
     const range=req.headers.range;
-    Lesson.findOne({where:{id:lessonId}})
+    db.Lesson.findOne({where:{id:lessonId}})
     .then(lesson=>{
         if(!lesson){
             const error=new Error('this lesson not found');
@@ -128,10 +156,10 @@ exports.getlessonId=(req,res,next)=>{
             throw error
         }
 
-        const videoPath=lesson.link;
+        const videoPath=lesson.Link;
         const videoSize=fs.statSync(videoPath).size;
         const CHUNK_SIZE=10**6;
-        const start=Number(range,replace(/\D/g,""));
+        const start=Number(range.replace(/\D/g,""));
         const end=Math.min(start+CHUNK_SIZE,videoSize-1);
         const contentLength=end-start+1;
         const headers={
@@ -143,7 +171,7 @@ exports.getlessonId=(req,res,next)=>{
         res.writeHead(206,headers);
         const videoStream=fs.createReadStream(videoPath,{start,end});
         videoStream.pipe(res);
-        res.status(200).json({lesson:lesson})
+        // res.json({lesson:lesson})
     })
     .catch(err=>{
         if(!err.statusCode){

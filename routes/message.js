@@ -4,7 +4,7 @@ const isAuth=require('../util/isAuth');
 
 router.post('/createMessage',isAuth,messageController.createMessage);
 
-router.delete('/:messageId',isAuth,messageController.deleteMessage);
+router.delete('/deleteMessage/:messageId',isAuth,messageController.deleteMessage);
 
 router.get('/allMessage/:chatId',isAuth,messageController.getAllMessages);
 

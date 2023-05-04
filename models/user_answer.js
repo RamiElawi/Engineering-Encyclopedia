@@ -1,17 +1,4 @@
-// const Sequelize=require('sequelize');
-// const sequelize=require('../util/database');
-
-// const user_answer=sequelize.define('user_answer',{
-//     id:{
-//         type:Sequelize.INTEGER,
-//         allowNull:false,
-//         autoIncrement:true,
-//         primaryKey:true
-//     }
-// })
-
-// module.exports=user_answer;
-
+const user = require("./user");
 
 module.exports=(sequelize,DataTypes)=>{
     const user_answer=sequelize.define('user_answer',{
@@ -20,10 +7,28 @@ module.exports=(sequelize,DataTypes)=>{
             allowNull:false,
             autoIncrement:true,
             primaryKey:true
+        },
+        uesrId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'user',
+                key:'id'
+              },
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
+        },
+        answerId:{
+            type:DataTypes.INTEGER,
+            references:{
+                model:'answer',
+                key:'id'
+              },
+              onUpdate:'CASCADE',
+              onDelete:'SET NULL'
         }
     })
 
-    user_answer.assocaite=models=>{
+    user_answer.associate=models=>{
         user_answer.belongsTo(models.user)
         user_answer.belongsTo(models.answer)
     }
