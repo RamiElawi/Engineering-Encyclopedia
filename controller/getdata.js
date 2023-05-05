@@ -1,4 +1,4 @@
-// const db=require('../models')
+const db=require('../models')
 const path=require('path');
 const fs=require('fs');
 const {Op,Sequelize}=require('sequelize')
@@ -6,9 +6,7 @@ const {Op,Sequelize}=require('sequelize')
 exports.getServices=(req,res,next)=>{
     const page=parseInt(req.query.page) ;
     const size=parseInt(req.query.size) ;
-    console.log(page,typeof page)
-    console.log(size,typeof size)
-    return db.Service.findAll({limit:size,offset:(page-1)*size})
+    return db.service.findAll({limit:size,offset:(page-1)*size})
     .then(services=>{
         return res.status(200).json({message:"All Services",services:services})
     })
@@ -22,7 +20,7 @@ exports.getServices=(req,res,next)=>{
 // get one service with Id
 exports.getServiceId=(req,res,next)=>{
     const serviceId=req.params.serviceId;
-    return db.Service.findOne({where:{id:serviceId}})
+    return db.service.findOne({where:{id:serviceId}})
     .then(service=>{
         if(!service){
             const error=new Error('Not found this service')
@@ -45,7 +43,7 @@ exports.getSTL=(req,res,next)=>{
     const page=parseInt(req.query.page) ;
     const size=parseInt(req.query.size) ;
 
-    db.STL.findAll({include:[{model:db.image},{model:db.Material},{model:db.File},{model:db.user}],offset:((page-1)*size),limit:size})
+    db.STL.findAll({include:[{model:db.image},{model:db.material},{model:db.file},{model:db.user},{model:db.feature},{model:db.color},{model:db.project}],offset:((page-1)*size),limit:size})
     .then(stls=>{
         if(!stls){
             stls='There are no stls';
@@ -63,7 +61,7 @@ exports.getSTL=(req,res,next)=>{
 // get stl by id
 exports.getSTLId=(req,res,next)=>{
     const stlId=req.params.stlId;
-    db.STL.findOne({where:{id:stlId},include:[{model:db.image},{model:db.Material},{model:db.user},{model:db.File}]})
+    db.STL.findOne({where:{id:stlId},include:[{model:db.image},{model:db.material},{model:db.user},{model:db.file},{model:db.feature},{model:db.color},{model:db.project}]})
     .then(stl=>{
         if(!stl){
             const error=new Error('This STL is not found')
@@ -82,9 +80,7 @@ exports.getSTLId=(req,res,next)=>{
 
 // get Materials
 exports.getMaterials=(req,res,next)=>{
-    const page=parseInt(req.query.page) ;
-    const size=parseInt(req.query.size) ;
-    db.Material.findAll({offset:(page-1)*size,limit:size})
+    db.material.findAll()
     .then(materials=>{
         if(materials.length==0){
             materials='You don\'t have any material'
@@ -103,7 +99,7 @@ exports.getMaterials=(req,res,next)=>{
 exports.getmaterialId=(req,res,next)=>{
     const materialId=req.params.materialId;
 
-    db.Material.findOne({where:{id:materialId}})
+    db.material.findOne({where:{id:materialId}})
     .then(material=>{
         if(!material){
             const error=new Error('This material is not found');
@@ -119,7 +115,39 @@ exports.getmaterialId=(req,res,next)=>{
         next(err);
     })
 }
+// get Feature
+exports.getFeature=(req,res,next)=>{
+    return db.feature.findAll()
+    .then(feature=>{
+        return res.status(200).json({feature:feature})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}
+// get Featurea id
+exports.getFeaturelId=(req,res,next)=>{
+    const featureId=req.params.featureId;
 
+    db.feature.findOne({where:{id:featureId}})
+    .then(feature=>{
+        if(!feature){
+            const error=new Error('This feature is not found');
+            error.statusCode=422;
+            throw error;
+        }
+        return res.status(200).json({feature:feature})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}
 // download STL File
 exports.downloadSTLFile=(req,res,next)=>{
     const stlId=req.params.stlId;
@@ -242,7 +270,7 @@ exports.stlUnLike=(req,res,next)=>{
 exports.getProject=(req,res,next)=>{
     const size=parseInt(req.query.size);
     const page=parseInt(req.query.page);
-    return db.Project.findAll({offset:((page-1)*size),limit:size,include:[{model:db.user},{model:db.STL},{model:db.File}]})
+    return db.project.findOne({offset:((page-1)*size),limit:size,include:[{model:db.user},{model:db.STL},{model:db.file}]})
     .then(projects=>{
         if(!projects){
             projects='Thee are no projects'
@@ -259,7 +287,7 @@ exports.getProject=(req,res,next)=>{
 // get one project by id
 exports.getPrjectId=(req,res,next)=>{
     const projectId=req.params.projectId;
-    db.Project.findOne({where:{id:projectId},include:[{model:db.user},{model:db.STL},{model:db.File}]})
+    db.project.findOne({where:{id:projectId},include:[{model:db.user},{model:db.STL},{model:db.file}]})
     .then(project=>{
         if(!project){
             const error=new Error('This project is not found')
@@ -351,7 +379,7 @@ exports.projectUnLike=(req,res,next)=>{
 exports.getCourses=(req,res,next)=>{
     const page=parseInt(req.query.page);
     const size=parseInt(req.query.size);
-    return db.Course.findAll({include:[{model:db.user}],offset:((page-1)*size),limit:size})
+    return db.course.findAll({include:[{model:db.user}],offset:((page-1)*size),limit:size})
     .then(courses=>{
         if(courses.length==0){
             courses="there are no courses";
@@ -368,7 +396,7 @@ exports.getCourses=(req,res,next)=>{
 // get user course with Id
 exports.getCourseId=(req,res,next)=>{
     const courseId=req.params.courseId;
-    return db.Course.findOne({where:{id:courseId},include:[{model:db.user}]})
+    return db.course.findOne({where:{id:courseId},include:[{model:db.user}]})
     .then(course=>{
         if(!course){
             const error=new Error("This course is not exists");

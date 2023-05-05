@@ -13,9 +13,9 @@ const storageFile=multer.diskStorage({
 })
 const upload=multer({storage:storageFile});
 
-router.post('/addProject',isAuth,upload.fields([{name:'file'},{name:'image'}]),projectController.addProject)
+router.post('/addProject',isAuth,upload.fields([{name:'file'},{name:'imageSTL'},{name:'image'}]),projectController.addProject)
 
-router.post('/updateProject/:projectId',isAuth,upload.fields([{name:'file'},{name:'image'}]),projectController.updateProject);
+router.post('/updateProject/:projectId',isAuth,upload.fields([{name:'file'},{name:'imageSTL'},{name:'image'}]),projectController.updateProject);
 
 router.delete('/deleteProject/:projectId',isAuth,projectController.deleteProject);
 

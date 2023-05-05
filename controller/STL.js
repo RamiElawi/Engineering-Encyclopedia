@@ -337,7 +337,7 @@ exports.deleteSTL=(req,res,next)=>{
         })
     })
     .then(()=>{
-        return db.file.findAll({where:{fileabelId:stlId,fileabl0eType:'STL'}})
+        return db.file.findAll({where:{fileabelId:stlId,fileableType:'STL'}})
     })
     .then(files=>{
         return files.forEach(ele=>{

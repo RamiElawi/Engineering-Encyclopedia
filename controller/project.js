@@ -1,53 +1,70 @@
-// const db=require('../models')
+const db=require('../models')
 const {Op}=require('sequelize')
 
 // create project
 exports.addProject=(req,res,next)=>{
     const projectName=req.body.projectName;
     const description=req.body.description;
-    const price=req.body.price;
-    const stlId=req.body.stlId
-    let my_project;
-    // console.log(projectName,description,price)
-    if(Object.keys(req.files).length<2){
-        const error=new Error('Did not choose any file');
+    const stlId=req.body.stlId;
+    const width=req.body.width;
+    const length=req.body.length;
+    const height=req.body.height;
+    let requiredProject;
+    let fileNumber=3;
+
+    // if user don't choose 3 files show error 
+    if(Object.keys(req.files).length<fileNumber){
+        const error=new Error('Did not choose file');
         error.statusCode=422;
         throw error;
     }
-    // console.log('file       df',req.files.file)
-    // console.log('image      df',req.files.image)
-    return db.Project.create({
+    // create Project
+    return db.project.create({
         projectName:projectName,
         description:description,
-        price:price,
-        projectImage:req.files.image[0].path
+        userId:req.userId,
+        width:width,
+        length:length,
+        height:height,
+        projectImage:req.files.image[0].path,
+        projectImageSTL:req.files.imageSTL[0].path,
     })
     .then(project=>{
-        my_project=project;
-        req.files.file.forEach(element => {
-            db.File.create({
+        requiredProject=project;
+        // create file 
+        return req.files.file.forEach(element => {
+            db.file.create({
                 path:element.path,
-                projectId:my_project.id
+                fileName:element.originalname,
+                fileabelId:requiredProject.id,
+                fileableType:'Project'
             })
         });
     })
     .then(()=>{
+        // connect the project with its STL
+        // if there are many stl
         if(Array.isArray(stlId)){
-            stlId.forEach(ele=>{
+            return stlId.forEach(ele=>{
                 db.project_stl.create({
-                    userId:req.userId,
-                    projectId:my_project.id,
+                    projectId:requiredProject.id,
                     stlId:ele
                 })
             })
         }else{
-            db.project_stl.create({
-                userId:req.userId,
-                projectId:my_project.id,
+            // if there are one stl
+            return db.project_STL.create({
+                projectId:requiredProject.id,
                 stlId:stlId
             })
         }
-        
+    })
+    .then(()=>{
+        return db.STL.sum('price',{where:{id:stlId}})
+    })
+    .then(sum=>{
+        requiredProject.price=sum;
+        return requiredProject.save();
     })
     .then(()=>{
         return res.status(200).json({message:'Project has been created'})
@@ -65,44 +82,51 @@ exports.updateProject=(req,res,next)=>{
     const projectId=req.params.projectId;
     const projectName=req.body.projectName;
     const description=req.body.description;
-    const price=req.body.price;
+    const length=req.body.length;
+    const width=req.body.width;
+    const height=req.body.height;
     let stlId=req.body.stlId;
-    let my_stl=new Array();
+    let requiredSTLs=new Array();
+    let requiredProject;
     let i=0;
-    db.project_stl.findAll({where:{projectId:projectId}})
-    .then(project=>{
-        if(!project.length){
+    db.project.findOne({where:{id:projectId}})
+    .then(requiredP=>{
+        if(!requiredP){
             const error=new Error('This project is not found');
             error.statusCode=422;
             throw error;
         }
-        if(project[0].userId!=req.userId){
-            const error=new Error('You dont have authorization to update this project');
+        if(project.userId!=req.userId){
+            const error=new Error('You don\'t have authorization to update this project');
             error.statusCode=422;
             throw error;
         }
-        project.forEach(ele=>{
-            my_stl[i]=ele.stlId;
-            i++;
-            ele.destroy();
-        })
-        return db.Project.findOne({where:{id:projectId}})
-    })
-    .then((project)=>{
-        project.projectName=projectName
-        project.description=description
-        project.price=price
+        console.log(req.files)
+        console.log(requiredP)
+        requiredP.projectName=projectName
+        requiredP.description=description
+        requiredP.length=length;
+        requiredP.width=width;
+        requiredP.height=height;
+
         if(!req.files.image){
-            project.projectImage=project.projectImage
+            requiredP.projectImage=requiredP.projectImage
         }else{
-            require('../util/clearImage').clearImage(project.projectImage)
-            project.projectImage=req.files.image[0].path
+            require('../util/clearImage').clearImage(requiredP.projectImage)
+            requiredP.projectImage=req.files.image[0].path
         }
-        return project.save();
+        if(!req.files.imageSTL){
+            requiredP.projectImage=requiredP.projectImageSTL
+        }else{
+            require('../util/clearImage').clearImage(requiredP.projectImageSTL)
+            requiredP.projectImage=req.files.imageSTL[0].path
+        }
+        requiredProject=requiredP
+        return requiredP.save();
     })
     .then(()=>{
         if(req.files.file){
-            File.findAll({where:{projectId:projectId}})
+            db.file.findAll({where:{fileabelId:projectId,fileableType:'Project'}})
             .then(file=>{
                 file.forEach(ele=>{
                     require('../util/clearImage').clearImage(ele.path)
@@ -118,27 +142,42 @@ exports.updateProject=(req,res,next)=>{
         }
     })
     .then(()=>{
+        return db.project_STL.findAll({where:{id:projectId}})
+    })
+    .then(projects=>{
+        return projects.forEach(ele=>{
+            requiredSTLs[i]=ele.stlId;
+            i++;
+            ele.destroy();
+        })
+    })
+    .then(()=>{
         if(!stlId){
-            stlId=my_stl;
+            stlId=requiredSTLs;
         }
         if(Array.isArray(stlId)){
-            stlId.forEach(ele=>{
-                db.project_stl.create({
+            return stlId.forEach(ele=>{
+                db.project_STL.create({
                     stlId:ele,
                     projectId:projectId,
-                    userId:req.userId
                 })
             })
         }else{
-            db.project_stl.create({
+            return db.project_STL.create({
                 stlId:stlId,
                 projectId:projectId,
-                userId:req.userId
             })
         }
     })
     .then(()=>{
-        res.status(200).json({message:"project has been updated"})
+        return db.STL.sum('price',{where:{id:stlId}})
+    })
+    .then(sum=>{
+        requiredProject.price=sum;
+        return requiredProject.save();
+    })
+    .then(()=>{
+        return res.status(200).json({message:"project has been updated"})
     })
     .catch(err=>{
         if(!err.statusCode){
@@ -150,35 +189,40 @@ exports.updateProject=(req,res,next)=>{
 // delete project by id
 exports.deleteProject=(req,res,next)=>{
     const projectId=req.params.projectId;
-    db.project_stl.findAll({where:{projectId:projectId}})
+    let requiredProject;
+    db.project.findOne({where:{id:projectId}})
     .then(project=>{
         if(!project){
             const error=new Error('This project is not found')
             error.statusCode=422;
             throw error;
         }
-        if(project[0].userId!=req.userId){
+        if(project.userId!=req.userId){
             const error=new Error('You dont have authorization to delete this project');
             error.statusCode=422;
             throw error;
         }
-        project.forEach(ele=>{
-            ele.destroy();
-        })
-        return db.File.findAll({where:{projectId:projectId}})
+        require('../util/clearImage').clearImage(project.projectImage)
+        require('../util/clearImage').clearImage(project.projectImageSTL)
+        requiredProject=project
+        return db.file.findAll({where:{fileabelId:projectId,fileableType:'Project'}})
     })
     .then((files)=>{
-        files.forEach(ele=>{
+        return    files.forEach(ele=>{
             require('../util/clearImage').clearImage(ele.path);
             ele.destroy();
         })
     })
     .then(()=>{
-        return db.Project.findOne({where:{id:projectId}})
+        return db.project_STL.findAll({where:{projectId:projectId}})
     })
-    .then((project)=>{
-        require('../util/clearImage').clearImage(project.projectImage)
-        return project.destroy();
+    .then((projects)=>{
+        return projects.forEach(ele=>{
+            ele.destroy();
+        })
+    })
+    .then(()=>{
+        return requiredProject.destroy()
     })
     .then(()=>{
         return res.status(200).json({message:'Project has been deleted'})
@@ -195,24 +239,11 @@ exports.deleteProject=(req,res,next)=>{
 exports.getMyProject=(req,res,next)=>{
     const page=parseInt(req.query.page);
     const size=parseInt(req.query.size);
-    let my_project=new Array();
-    let i=0;
-    db.project_stl.findAll({where:{projectId:{[Op.not]:null},userId:req.userId}})
+    db.project.findAll({where:{userId:req.userId},offset:((page-1)*size),limit:size,include:[{model:db.file},{model:db.user},{model:db.STL,include:[{model:db.material},{model:db.feature},{model:db.color},{model:db.image}]}]})
     .then(projects=>{
         if(!projects){
             projects='You do not have any projects';
         }
-        projects.forEach(element =>{
-            my_project[i]=element.projectId;
-            i++;
-        });
-        return my_project;
-    })
-    .then(my_project=>{
-        let set=new Set(my_project)
-        return db.Project.findAll({where:{id:[...set]},offset:((page-1)*size),limit:size,include:[{model:db.File},{model:db.user},{model:db.STL}]})
-    })
-    .then(projects=>{
         return res.status(200).json({projects:projects})
     })
     .catch(err=>{
