@@ -12,6 +12,7 @@ const storageFile=multer.diskStorage({
 const upload=multer({storage:storageFile});
 const isAuth=require('../util/isAuth');
 const lessonController=require('../controller/lesson');
+const lesson = require('../models/lesson');
 
 router.post('/addLesson',isAuth,upload.fields([{name:'vedio'},{name:'image'}]),lessonController.addLesson);
 
@@ -21,7 +22,9 @@ router.delete('/deleteLesson/:lessonId',isAuth,lessonController.deleteLesson);
 
 router.get('/courseLessons/:courseId',isAuth,lessonController.getCourseLessons);
 
-router.get('/:lessonId',isAuth,lessonController.getlessonId);
+router.get('/Video/:lessonId',isAuth,lessonController.getVideo);
+
+router.get('/:lessonId',isAuth,lessonController.getLessonId)
 
 // router.post('/:lessonId/like',isAuth,lessonController);
 

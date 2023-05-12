@@ -1,24 +1,17 @@
-// const db=require('../models')
+const db=require('../models')
 const io=require('../socket');
 
 
 exports.addComment=(req,res,next)=>{
     const description=req.body.desc;
     const lessonId=req.params.lessonId;
-    let ourComment;
-    return db.Comment.create({
+    return db.comment.create({
         description:description,
-        lessonId:lessonId
+        lessonId:lessonId,
+        userId:req.userId
     })
     .then((comment)=>{
-        ourComment=comment;
-        return db.user_comment.create({
-            userId:req.userId,
-            commentId:ourComment.id
-        })
-    })
-    .then(()=>{
-        io.getIo().emit('comment',{action:'addComment',comment:ourComment})
+        io.getIo().emit('comment',{action:'addComment',comment:comment})
         return res.status(200).json({message:"done"})
     })
     .catch(err=>{
@@ -31,7 +24,7 @@ exports.addComment=(req,res,next)=>{
 exports.updateComment=(req,res,next)=>{
     const commentId=req.params.commentId;
     const desc=req.body.desc;
-    db.user_comment.findOne({where:{commentId:commentId,like:0}})
+    db.comment.findOne({where:{id:commentId}})
     .then(comment=>{
         if(!comment){
             const error=new Error('This comment is not found')
@@ -43,9 +36,6 @@ exports.updateComment=(req,res,next)=>{
             error.statusCode=404;
             throw error;
         }
-        return db.Comment.findOne({where:{id:commentId}})
-    })
-    .then(comment=>{
         comment.description=desc;
         return comment.save();
     })
@@ -63,7 +53,7 @@ exports.updateComment=(req,res,next)=>{
 
 exports.deleteComment=(req,res,next)=>{
     const commentId=req.params.commentId;
-    db.user_comment.findOne({where:{commentId:commentId,like:0}})
+    db.comment.findOne({where:{id:commentId}})
     .then(comment=>{
         if(!comment){
             const error=new Error('This comment is not found')
@@ -76,12 +66,8 @@ exports.deleteComment=(req,res,next)=>{
             throw error;
         }
         comment.destroy();
-        return db.Comment.findOne({where:{id:commentId}})
     })
     .then((comment)=>{
-        return comment.destroy();
-    })
-    .then(()=>{
         io.getIo().emit('comment',{action:'deleteComment',comment:commentId})
         res.status(200).json({message:"comment has been deleted"})
     })
@@ -95,7 +81,7 @@ exports.deleteComment=(req,res,next)=>{
 
 exports.getComments=(req,res,next)=>{
     const lessonId=req.params.lessonId;
-    db.Comment.findAll({where:{lessonId:lessonId},include:[{model:db.user}]})
+    db.comment.findAll({where:{lessonId:lessonId},include:[{model:db.user}]})
     .then(comments=>{
         if(!comments.length){
             comments='there are no comments'
@@ -109,26 +95,20 @@ exports.getComments=(req,res,next)=>{
         next(err);
     })
 }
+
 exports.addReplyComment=(req,res,next)=>{
     const lessonId=req.params.lessonId;
-    const userCommentId=req.params.userCommentId;
+    const commentId=req.params.commentId;
     const desc=req.body.desc;
-    let ourComment;
 
-    db.Comment.create({
+    db.comment.create({
         lessonId:lessonId,
         description:desc,
+        userId:req.userId,
+        replayCommentId:commentId
     })
     .then((comment)=>{
-        ourComment=comment;
-        return db.user_comment.create({
-            userId:req.userId,
-            commentId:comment.id,
-            userCommentId:userCommentId
-        })
-    })
-    .then((user_comment)=>{
-        io.getIo().emit('comment',{action:'replyComment',comment:ourComment,user_comment:user_comment})
+        io.getIo().emit('comment',{action:'replyComment',comment:comment})
         return res.status(200).json({message:"done"})
     })
     .catch(err=>{
@@ -140,24 +120,17 @@ exports.addReplyComment=(req,res,next)=>{
 }
 
 exports.getReplyComment=(req,res,next)=>{
-    const userCommentId=req.params.userCommentId;
-    let ourComment=new Array();
-    db.user_comment.findAll({where:{userCommentId:userCommentId}})
+    const commentId=req.params.commentId;
+    db.comment.findAll({where:{replayCommentId:commentId},include:[{model:db.user}]})
     .then(comments=>{
-        comments.forEach(element => {
-            ourComment.push(element.id)
-        });
-        return ourComment
-    })
-    .then(ourComment=>{    
-            return db.Comment.findAll({where:{id:ourComment},include:[{model:db.user}]})
-    })
-    .then(comments=>{
+        if(!comments.length){
+            comments='there are no comments'
+        }
         return res.status(200).json({comments:comments})
     })
     .catch(err=>{
         if(!err.statusCode){
-            err.statsusCode=500
+            err.statusCode=500
         }
         next(err);
     })

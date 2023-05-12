@@ -61,14 +61,25 @@ exports.getSTL=(req,res,next)=>{
 // get stl by id
 exports.getSTLId=(req,res,next)=>{
     const stlId=req.params.stlId;
-    db.STL.findOne({where:{id:stlId},include:[{model:db.image},{model:db.material},{model:db.user},{model:db.file},{model:db.feature},{model:db.color},{model:db.project}]})
+    let requiedSTL;
+    let isLike;
+    return db.STL.findOne({where:{id:stlId},include:[{model:db.image},{model:db.material},{model:db.user},{model:db.file},{model:db.feature},{model:db.color},{model:db.project}]})
     .then(stl=>{
         if(!stl){
             const error=new Error('This STL is not found')
             error.statsuCode=404;
             throw error;
         }
-        res.status(200).json({stl:stl});
+        requiedSTL=stl;
+        return db.like.findOne({where:{likeableId:stlId,likeableType:'STL',userId:req.userId}})
+    })
+    .then((isFound)=>{
+        if(!isFound){
+            isLike=false
+        }else{
+            isLike=true
+        }
+        return res.status(200).json({stl:requiedSTL,isLike:isLike});
     })
     .catch(err=>{
         if(!err.statsuCode){
@@ -194,75 +205,67 @@ exports.downloadSTLFile=(req,res,next)=>{
 
 exports.stlLike=(req,res,next)=>{
     const stlId=req.params.stlId;
-    let counter;
-    db.project_stl.findOne({where:{stlId:stlId,userId:req.userId,projectId:null}})
-    .then(stl=>{
-        if(stl){
-            stl.like=true;
-            return stl.save()
-        }
-        return db.project_stl.create({
-            stlId:stlId,
-            userId:req.userId,
-            like:true
-        })
+    let requiredSTL;
+    let countLike;
+    return db.like.create({
+        userId:req.userId,
+        likeableId:stlId,
+        likeableType:"STL"
     })
     .then(()=>{
-        return db.project_stl.findAll({where:{stlId:stlId,like:true,projectId:null}}).count();
-    })
-    .then(count=>{
-        counter=count;
         return db.STL.findOne({where:{id:stlId}})
     })
     .then(stl=>{
-        stl.like=counter;
-        return stl.save();
+        requiredSTL=stl;
+        return db.like.count({where:{likeableId:stlId,likeableType:'STL'}})
+    })
+    .then(count=>{
+        countLike=count
+        requiredSTL.like=count;
+        return requiredSTL.save();
     })
     .then(()=>{
-        return res.status(200).json({message:"done"})
+        return res.status(200).json({message:"like has been add",countLike:countLike})
     })
     .catch(err=>{
-        if(!err.statsuCode){
-            err.statuCode=500;
+        if(!err.statusCode){
+            err.statusCode=500
         }
         next(err);
     })
+
 }
 
 exports.stlUnLike=(req,res,next)=>{
     const stlId=req.params.stlId;
-    let counter;
-    db.project_stl.findOne({where:{stlId:stlId,userId:req.userId,projectId:null}})
-    .then(stl=>{
-        if(stl){
-            stl.like=false;
-            return stl.save()
-        }else{
-            const error=new Error('this stl is not found')
-            error.statsuCode=422;
-            throw error;
-        }
+    let requiredSTL;
+    let countLike;
+    return db.like.findOne({where:{likeableId:stlId,likeableType:'STL'}})
+    .then((like)=>{
+        return like.destroy();
     })
     .then(()=>{
-        return db.project_stl.findAll({where:{stlId:stlId,like:true,projectId:null}}).count();
-    })
-    .then(count=>{
-        counter=count;
         return db.STL.findOne({where:{id:stlId}})
     })
     .then(stl=>{
-        stl.like=counter;
-        return stl.save();
+        requiredSTL=stl;
+        return db.like.count({where:{likeableId:stlId,likeableType:'STL'}})
+    })
+    .then(count=>{
+        countLike=count;
+        requiredSTL.like=count;
+        return requiredSTL.save();
     })
     .then(()=>{
-        return res.status(200).json({message:"done"})
+        return res.status(200).json({message:"like has been add",countLike:countLike})
     })
     .catch(err=>{
-        if(!err.statsuCode){
-            err.statuCode=500;
+        if(!err.statusCode){
+            err.statusCode=500
         }
         next(err);
     })
+
 }
 
 

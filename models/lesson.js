@@ -41,7 +41,7 @@ module.exports=(sequelize,DataTypes)=>{
             type:DataTypes.BOOLEAN,
             defaultValue:false
         }
-    })
+    },{timestamps:false,freezeTableName:true})
     Lesson.associate=models=>{
         Lesson.belongsTo(models.course)
         Lesson.hasMany(models.question)

@@ -24,5 +24,7 @@ router.delete('/deleteCourse/:courseId',isAuth,courseController.deleteCourse)
 
 router.get('/myCourses',isAuth,courseController.getMyCourses)
 
+router.post('/payments',isAuth,courseController.Payment)
+
 
 module.exports=router;

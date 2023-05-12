@@ -18,11 +18,11 @@ module.exports=(sequelize,DataTypes)=>{
             references:{
                 model:'lesson',
                 key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            },
+            onUpdate:'CASCADE',
+            onDelete:'SET NULL'
         }
-    })
+    },{timestamps:false,freezeTableName:true})
     
     Question.associate=models=>{
         Question.belongsTo(models.lesson);

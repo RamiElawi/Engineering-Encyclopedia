@@ -41,8 +41,12 @@ module.exports=(sequelize,DataTypes)=>{
               },
               onUpdate:'CASCADE',
               onDelete:'SET NULL'
+        },
+        lessonNumber:{
+            type:DataTypes.INTEGER,
+            defaultValue:0
         }
-})
+},{timestamps:false,freezeTableName:true})
 
     Course.associate=models=>{
         Course.belongsTo(models.user);

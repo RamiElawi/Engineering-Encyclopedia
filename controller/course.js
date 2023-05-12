@@ -1,4 +1,4 @@
-// const db=require('../models')
+const db=require('../models')
 const Op=require('sequelize').Op;
 
 // create one course
@@ -14,19 +14,14 @@ exports.addCourse=(req,res,next)=>{
         error.statusCode=422;
         throw error;
     }
-    db.Course.create({
+    db.course.create({
         courseName:courseName,
         description:description,
         level:level,
         totalTime:totalTime,
         price:price,
-        courseImage:req.file.path
-    })
-    .then(course=>{
-        return db.user_course.create({
-            userId:req.userId,
-            courseId:course.id
-        })
+        courseImage:req.file.path,
+        userId:req.userId
     })
     .then(()=>{
         return res.status(200).json({message:'the course has been created'})
@@ -49,38 +44,33 @@ exports.updateCourse=(req,res,next)=>{
     const price=req.body.price;
     const level=req.body.level; 
 
-    db.Course.findOne({where:{id:courseId}})
+    db.course.findOne({where:{id:courseId}})
     .then(course=>{
         if(!course){
             const error=new Error('this course is not found');
             error.statusCode=404;
             throw error;
         }
-        correctCourse=course;
-        return db.user_course.findOne({where:{courseId:courseId}})
-    })
-    .then((isEqual)=>{
-        if(isEqual.userId!=req.userId){
+        if(course.userId!=req.userId){
             const error=new Error('you dont have authorization to update this course')
             error.statusCode=422;
             throw error;
         }
-        
-        correctCourse.courseName=courseName;
-        correctCourse.description=description;
-        correctCourse.totalTime=totalTime;
-        correctCourse.price=price;
-        correctCourse.level=level;
+        course.courseName=courseName;
+        course.description=description;
+        course.totalTime=totalTime;
+        course.price=price;
+        course.level=level;
         if(!req.file){
-            correctCourse.courseImage=correctCourse.courseImage;
+            course.courseImage=course.courseImage;
         }else{
-            require('../util/clearImage').clearImage(correctCourse.courseImage)
-            correctCourse.courseImage=req.file.path;
+            require('../util/clearImage').clearImage(course.courseImage)
+            course.courseImage=req.file.path;
         }
-        return correctCourse.save();
+        return course.save();
     })
     .then(()=>{
-        return res.status(201).json({message:"the course has been updated"})
+        return res.status(200).json({message:"course has been updated"})
     })
     .catch(err=>{
         if(!err.statuscode){
@@ -92,26 +82,30 @@ exports.updateCourse=(req,res,next)=>{
 // delete course with Id 
 exports.deleteCourse=(req,res,next)=>{
     const courseId=req.params.courseId;
-    let correctCourse;
-    db.Course.findOne({where:{id:courseId}})
+    let requiredCourse;
+    db.course.findOne({where:{id:courseId}})
     .then(course=>{
         if(!course){
-            const error=new Error('this course is not found ')
+            const error=new Error('this course is not found')
             error.statusCode=404;
             throw error;
         }
-        correctCourse=course;
-        return db.user_course.findOne({where:{courseId:course.id}})
-    })
-    .then(isEqual=>{
-        // console.log(isEqual);
-        if(isEqual.userId!=req.userId){
+        if(course.userId!=req.userId){
             const error=new Error('you don\'t have authrization to delete this course');
             error.statusCode=422;
             throw error;
         }
         require('../util/clearImage').clearImage(correctCourse.courseImage);
-        return correctCourse.destroy();
+        requiredCourse=course;
+        return db.courseRate.findAll({where:{courseId:courseId}})
+    })
+    .then(courses=>{
+        return courses.forEach(ele=>{
+            ele.destroy();
+        })
+    })
+    .then(()=>{
+        return requiredCourse.destroy();
     })
     .then(()=>{
         res.status(200).json({message:"the coures has been deleted"})
@@ -129,21 +123,9 @@ exports.deleteCourse=(req,res,next)=>{
 exports.getMyCourses=(req,res,next)=>{
     const page=parseInt(req.query.page);
     const size=parseInt(req.query.size);
-    let i=0;
-    let myCourses=new Array();
-    db.user_course.findAll({where:{userId:req.userId}})
+    db.course.findAll({where:{userId:req.userId},include:[{model:db.user}],offset:(page-1)*size,limit:size})
     .then(courses=>{
-        courses.forEach(element => {
-            myCourses[i]=element.courseId;
-            i++;
-        });
-        return myCourses;
-    })
-    .then(myCourses=>{
-        return db.Course.findAll({where:{id:{[Op.in]:myCourses}},offset:(page-1)*size,limit:size})
-    })
-    .then(courses=>{
-        res.status(200).json({courses:courses})
+        return res.status(200).json({courses:courses})
     })
     .catch(err=>{
         if(!err.statusCode){

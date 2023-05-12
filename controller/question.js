@@ -1,33 +1,34 @@
 const db = require("../models");
 
-// const db=require('../models')
 exports.addQuestion=(req,res,next)=>{
     const text=req.body.text;
     const rightAnswer=req.body.rightAnswer;
     const answers=req.body.answers;
     const lessonId=req.params.lessonId
-    let ourQuestion;
+    let requiredQuestion;
 
     db.question.create({
         text:text,
         lessonId:lessonId
     })
     .then(question=>{
-        ourQuestion=question;
-        answers.forEach(element => {
+        requiredQuestion=question;
+        return answers.forEach(element => {
             db.answer.create({
                 content:element,
                 questionId:question.id
             })
         });
+    })
+    .then(()=>{
         return db.answer.create({
             content:rightAnswer,
             questionId:question.id
         })
     })
     .then(answer=>{
-        ourQuestion.rightAnswer=answer.id;
-        return ourQuestion.save();
+        requiredQuestion.rightAnswer=answer.id;
+        return requiredQuestion.save();
     })
     .then(()=>{
         return res.status(200).json({message:'Question has been created'});
@@ -45,7 +46,7 @@ exports.updateQuestion=(req,res,next)=>{
     const text=req.body.text;
     const rightAnswer=req.body.rightAnswer;
     const answers=req.body.answers;
-    let ourQuestion;
+    let requiredQuestion;
 
     db.question.findOne({where:{id:questionId}})
     .then(question=>{
@@ -54,28 +55,33 @@ exports.updateQuestion=(req,res,next)=>{
             error.statusCode=422;
             throw error;
         }
-        ourQuestion=question;
+        requiredQuestion=question;
         question.text=text;
+        return question.save();
+    })
+    .then(()=>{
         return db.answer.findAll({where:{questionId:questionId}})
     })
     .then(answer=>{
         answer.forEach(ele=>{
             ele.destroy()
         })
-        answers.forEach(ele=>{
+        return answers.forEach(ele=>{
             db.answer.create({
                 content:ele,
                 questionId:questionId
             })
         })
+    })
+    .then(()=>{
         return db.answer.create({
             content:rightAnswer,
             questionId:questionId
         })
     })
     .then(answer=>{
-        ourQuestion.rightAnswer=answer.id;
-        return ourQuestion.save();
+        requiredQuestion.rightAnswer=answer.id;
+        return requiredQuestion.save();
     })
     .then(()=>{
         return res.status(200).json({message:'question has been updated'})
@@ -90,7 +96,7 @@ exports.updateQuestion=(req,res,next)=>{
 
 exports.deleteQuestion=(req,res,next)=>{
     const questionId=req.params.questionId;
-    let ourQuestion;
+    let requiredQuestion;
 
     return db.question.findOne({where:{id:questionId}})
     .then(question=>{
@@ -99,17 +105,16 @@ exports.deleteQuestion=(req,res,next)=>{
             error.statusCode=422;
             throw error;
         }
-        ourQuestion=question;
+        requiredQuestion=question;
         return db.answer.findAll({where:{questionId:questionId}})
     })
     .then(answer=>{
-        console.log(answer)
         return answer.forEach(ele=>{
             ele.destroy();
         })
     })
     .then(()=>{
-        return ourQuestion.destroy();
+        return requiredQuestion.destroy();
     })
     .then(()=>{
         return res.status(200).json({message:'question has been deleted'})
@@ -141,7 +146,9 @@ exports.getQuestion=(req,res,next)=>{
 }
 exports.chooseAnswer=(req,res,next)=>{
     const answerId=req.body.answerId;
-    
+    const lessonId=req.body.lessonId;
+    let numberRightAnswers;
+    let i=0;
     return answerId.forEach(ele=>{
         db.user_answer.create({
             userId:req.userId,
@@ -149,7 +156,23 @@ exports.chooseAnswer=(req,res,next)=>{
         })
     })
     .then(()=>{
-
+        return db.question.findAll({where:{lessonId}})
+    })
+    .then(questions=>{
+        return questions.forEach(question=>{
+            if(question.rightAnswer == answerId[i]){
+                numberRightAnswers++;
+            }
+        })
+    })
+    .then(()=>{
+        return db.question.count({where:{lessonId}})
+    })
+    .then((counter)=>{
+        let halfNumberQuestion=counter/2;
+        if(numberRightAnswers >= halfNumberQuestion){
+            
+        }
     })
     .catch(err=>{
         if(!err.statusCode){

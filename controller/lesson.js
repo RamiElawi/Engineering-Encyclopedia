@@ -1,17 +1,17 @@
-// const db=require('../models')
+const db=require('../models') 
 const fs=require('fs');
 exports.addLesson=(req,res,next)=>{
     const lessonName=req.body.lessonName;
     const description=req.body.description;
     const courseId=req.body.courseId
-    console.log(req.files)
-    if(Object.keys(req.files).length<2){
+    const fileNumber=2;
+    let requiredLesson;
+    if(Object.keys(req.files).length<fileNumber){
         const error=new Error('don\'t have any file to upload');
-        error.statuCode=422;
+        error.statusCode=422;
         throw error;
     }
-    // console.log('vedio',req.files.vedio[0].path)
-    return db.Lesson.create({
+    return db.lesson.create({
         lessonName:lessonName,
         description:description,
         Link:req.files.vedio[0].path,
@@ -19,17 +19,23 @@ exports.addLesson=(req,res,next)=>{
         courseId:courseId
     })
     .then(lesson=>{
-        return db.user_lesson.create({
-            userId:req.userId,
-            lessonId:lesson.id
-        })
+        requiredLesson=lesson;
+        return db.course.findOne({where:{id:courseId}})
+    })
+    .then(course=>{
+        course.lessonNumber+=1;
+        return course.save()
+    })
+    .then((course)=>{
+        requiredLesson.lessonId=course.lessonNumber
+        return requiredLesson.save()
     })
     .then(()=>{
         return res.status(200).json({message:'lesson had been created'})
     })
     .catch(err=>{
         if(!err.statusCode){
-            err.statuCode=500;
+            err.statusCode=500;
         }
         next(err);
     })
@@ -41,22 +47,22 @@ exports.updateLesson=(req,res,next)=>{
     const description=req.body.description;
     const courseId=req.body.courseId;
 
-    db.user_lesson.findOne({where:{lessonId:lessonId}})
+    
+    return db.course.findOne({where:{id:courseId}})
+    .then(course=>{
+        if(course.userId!=req.userId){
+            const error=new Error('you don\'t have autorization to update this lesson');
+            error.statusCode=422;
+            throw error;
+        }
+        return db.lesson.findOne({where:{id:lessonId}})
+    })
     .then(lesson=>{
         if(!lesson){
             const error=new Error('this lesson is not found');
             error.statusCode=404;
             throw error;
         }
-        if(lesson.userId!=req.userId){
-            const error=new Error('You don\'t have authorization to update this lesson');
-            error.statuCode=422;
-            throw error;
-        }
-        return db.Lesson.findOne({where:{id:lessonId}})
-    })
-    .then(lesson=>{
-        console.log(req.files)
         if(!req.files.vedio){
             lesson.Link=lesson.Link;
         }else{
@@ -71,15 +77,14 @@ exports.updateLesson=(req,res,next)=>{
         }
         lesson.lessonName=lessonName;
         lesson.description=description;
-        lesson.courseId=courseId;
         return lesson.save();
     })
-    .then(lesson=>{
+    .then(()=>{
         return res.status(200).json({message:"lesson has been updated"})
     })
     .catch(err=>{
-        if(!err.statuCode){
-            err.statuCode=500;
+        if(!err.statusCode){
+            err.statusCode=500;
         }
         next(err)
     })
@@ -87,24 +92,21 @@ exports.updateLesson=(req,res,next)=>{
 
 exports.deleteLesson=(req,res,next)=>{
     const lessonId=req.params.lessonId;
-    db.user_lesson.findOne({where:{lessonId:lessonId}})
-    .then(lesson=>{
-        if(!lesson){
-            const error=new Error('this lesson is not found');
-            error.statusCode=404;
+    const courseId=req.body.courseId;
+    let requiredCourse;
+    return db.course.findOne({wher:{id:courseId}})
+    .then(course=>{
+        if(course.userId!=req.userId){
+            const error=new Error('you don\'t have autorization to delete this lesson');
+            error.statusCode=422;
             throw error;
         }
-        if(lesson.userId!=req.userId){
-            const error=new Error('You don\'t have authorization to delete this lesson');
-            error.statuCode=422;
-            throw error;
-        }
-        lesson.destroy();
-        return db.Lesson.findOne({where:{id:lessonId}})
+        requiredCourse=course;
+        return db.lesson.findOne({where:{id:lessonId}})
     })
     .then(lesson=>{
         if(!lesson){
-            const error=new Error('this lesson is not found')
+            const error=new Error('this lesson is not found');
             error.statusCode=404;
             throw error;
         }
@@ -113,11 +115,15 @@ exports.deleteLesson=(req,res,next)=>{
         return lesson.destroy();
     })
     .then(()=>{
+        requiredCourse.lessonNumber-=1;
+        return requiredCourse.save();
+    })
+    .then(()=>{
         return res.status(200).json({message:'lesson had been deleted'})
     })
     .catch(err=>{
-        if(!err.statuCode){
-            err.statuCode=500;
+        if(!err.statusCode){
+            err.statusCode=500;
         }
         next(err);
     })
@@ -125,7 +131,7 @@ exports.deleteLesson=(req,res,next)=>{
 
 exports.getCourseLessons=(req,res,next)=>{
     const courseId=req.params.courseId;
-    db.Lesson.findAll({where:{courseId:courseId}})
+    db.lesson.findAll({where:{courseId:courseId}})
     .then(lessons=>{
         if(!lessons.length){
             lessons='There are no lessons for this course';
@@ -133,17 +139,17 @@ exports.getCourseLessons=(req,res,next)=>{
         return res.status(200).json({lessons:lessons})
     })
     .catch(err=>{
-        if(!err.statuCode){
-            err.statuCode=500;
+        if(!err.statusCode){
+            err.statusCode=500;
         }
         next(err);
     })
 }
 
-exports.getlessonId=(req,res,next)=>{
+exports.getVideo=(req,res,next)=>{
     const lessonId=req.params.lessonId;
     const range=req.headers.range;
-    db.Lesson.findOne({where:{id:lessonId}})
+    db.lesson.findOne({where:{id:lessonId}})
     .then(lesson=>{
         if(!lesson){
             const error=new Error('this lesson not found');
@@ -181,3 +187,21 @@ exports.getlessonId=(req,res,next)=>{
     })
 }
 
+exports.getLessonId=(req,res,next)=>{
+    const lessonId=req.params.lessonId;
+    db.lesson.findOne({where:{id:lessonId}})
+    .then(lesson=>{
+        if(!lesson){
+            const error=new Error('this lesson is not found')
+            error.statusCode=404;
+            throw error;
+        }
+        return res.status(200).json({lesson:lesson})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}

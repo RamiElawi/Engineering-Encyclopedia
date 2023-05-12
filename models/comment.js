@@ -38,7 +38,7 @@ module.exports=(sequelize,DataTypes)=>{
             onUpdate:'CASCADE',
             onDelete:'SET NULL'
       }
-    })
+    },{timestamps:false,freezeTableName:true})
 
     Comment.associate=models=>{
         Comment.belongsTo(models.user)
