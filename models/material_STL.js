@@ -16,13 +16,7 @@ module.exports=(sequelize,DataTypes)=>{
               onDelete:'SET NULL'
         },
         stlId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'STL',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         }
     },{timestamps:false,freezeTableName:true})
 

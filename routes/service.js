@@ -22,8 +22,10 @@ const upload=multer({storage:storageFile});
 
 router.post('/addService',isAuth,checkRoles(['admin']),upload.single('image'),serviceController.addService);
 
-router.post('/updateService/:serviceId',isAuth,checkRoles(['admin']),upload.single('image'),serviceController.updateService);
+router.put('/updateService/:serviceId',isAuth,checkRoles(['admin']),upload.single('image'),serviceController.updateService);
 
 router.delete('/deleteService/:serviceId',isAuth,checkRoles(['admin']),serviceController.deleteService)
+
+
 
 module.exports=router;

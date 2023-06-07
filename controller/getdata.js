@@ -1,7 +1,6 @@
 const db=require('../models')
 const path=require('path');
 const fs=require('fs');
-const {Op,Sequelize}=require('sequelize')
 // get All Services
 exports.getServices=(req,res,next)=>{
     const page=parseInt(req.query.page) ;
@@ -203,77 +202,11 @@ exports.downloadSTLFile=(req,res,next)=>{
     })
 }
 
-exports.stlLike=(req,res,next)=>{
-    const stlId=req.params.stlId;
-    let requiredSTL;
-    let countLike;
-    return db.like.create({
-        userId:req.userId,
-        likeableId:stlId,
-        likeableType:"STL"
-    })
-    .then(()=>{
-        return db.STL.findOne({where:{id:stlId}})
-    })
-    .then(stl=>{
-        requiredSTL=stl;
-        return db.like.count({where:{likeableId:stlId,likeableType:'STL'}})
-    })
-    .then(count=>{
-        countLike=count
-        requiredSTL.like=count;
-        return requiredSTL.save();
-    })
-    .then(()=>{
-        return res.status(200).json({message:"like has been add",countLike:countLike})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode=500
-        }
-        next(err);
-    })
-
-}
-
-exports.stlUnLike=(req,res,next)=>{
-    const stlId=req.params.stlId;
-    let requiredSTL;
-    let countLike;
-    return db.like.findOne({where:{likeableId:stlId,likeableType:'STL'}})
-    .then((like)=>{
-        return like.destroy();
-    })
-    .then(()=>{
-        return db.STL.findOne({where:{id:stlId}})
-    })
-    .then(stl=>{
-        requiredSTL=stl;
-        return db.like.count({where:{likeableId:stlId,likeableType:'STL'}})
-    })
-    .then(count=>{
-        countLike=count;
-        requiredSTL.like=count;
-        return requiredSTL.save();
-    })
-    .then(()=>{
-        return res.status(200).json({message:"like has been add",countLike:countLike})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statusCode=500
-        }
-        next(err);
-    })
-
-}
-
-
 // get All project
 exports.getProject=(req,res,next)=>{
     const size=parseInt(req.query.size);
     const page=parseInt(req.query.page);
-    return db.project.findOne({offset:((page-1)*size),limit:size,include:[{model:db.user},{model:db.STL},{model:db.file}]})
+    return db.project.findAll({offset:((page-1)*size),limit:size,include:[{model:db.user},{model:db.STL},{model:db.file}]})
     .then(projects=>{
         if(!projects){
             projects='Thee are no projects'
@@ -288,7 +221,7 @@ exports.getProject=(req,res,next)=>{
     })
 }
 // get one project by id
-exports.getPrjectId=(req,res,next)=>{
+exports.getProjectId=(req,res,next)=>{
     const projectId=req.params.projectId;
     db.project.findOne({where:{id:projectId},include:[{model:db.user},{model:db.STL},{model:db.file}]})
     .then(project=>{
@@ -302,77 +235,6 @@ exports.getPrjectId=(req,res,next)=>{
     .catch(err=>{
         if(!err.statusCode){
             err.statusCode=500;
-        }
-        next(err);
-    })
-}
-exports.projectLike=(req,res,next)=>{
-    const projectId=req.params.projectId;
-    let counter;
-    db.project_stl.findOne({where:{userId:req.userId,projectId:projectId}})
-    .then(project=>{
-        if(stl){
-            project.like=true;
-            return project.save()
-        }
-        return db.project_stl.create({
-            projectId:projectId,
-            userId:req.userId,
-            like:true
-        })
-    })
-    .then(()=>{
-        return db.project_stl.findAll({where:{like:true,projectId:projectId}}).count();
-    })
-    .then(count=>{
-        counter=count;
-        return db.Project.findOne({where:{id:projectId}})
-    })
-    .then(project=>{
-        project.like=counter;
-        return project.save();
-    })
-    .then(()=>{
-        return res.status(200).json({message:"done"})
-    })
-    .catch(err=>{
-        if(!err.statsuCode){
-            err.statuCode=500;
-        }
-        next(err);
-    })
-}
-exports.projectUnLike=(req,res,next)=>{
-    const projectId=req.params.projectId;
-    let counter;
-    db.project_stl.findOne({where:{userId:req.userId,projectId:projectId}})
-    .then(project=>{
-        if(stl){
-            project.like=false;
-            return project.save()
-        }else{
-            const error=new Error('this project is not found')
-            error.statsuCode=422;
-            throw error;
-        }
-    })
-    .then(()=>{
-        return db.project_stl.findAll({where:{like:true,projectId:projectId}}).count();
-    })
-    .then(count=>{
-        counter=count;
-        return db.Project.findOne({where:{id:projectId}})
-    })
-    .then(project=>{
-        project.like=counter;
-        return project.save();
-    })
-    .then(()=>{
-        return res.status(200).json({message:"done"})
-    })
-    .catch(err=>{
-        if(!err.statsuCode){
-            err.statuCode=500;
         }
         next(err);
     })
@@ -420,47 +282,95 @@ exports.getCourseId=(req,res,next)=>{
 exports.addRate=(req,res,next)=>{
     const courseId=req.params.courseId;
     const rate=req.body.rate;
-    let sum=0;
-    let count;
-    return db.user_course.findOne({where:{courseId:courseId,userId:req.userId}})
-    .then(course=>{
-        if(!course){
-            return db.user_course.create({
-                rate:rate,
-                courseId:courseId,
-                userId:req.userId
-            })
+    return db.courseRate.findOne({where:{courseId:courseId,userId:req.userId}})
+    .then(rateCourse=>{
+        if(rateCourse){
+            rateCourse.rate=rate
+            return rateCourse.save();
         }
-        course.rate=rate
-        return course.save();
-    })
-    .then(()=>{
-        return db.user_course.findAll({attributes:[[Sequelize.fn('SUM',Sequelize.col('rate')),'sum']],where:{courseId:courseId,rate:{[Op.not]:null}}})
-    })
-    .then(courses=>{
-        courses.forEach(ele=>{
-            sum=ele.toJSON().sum
+        return db.courseRate.create({
+            userId:req.userId,
+            courseId:courseId,
+            rate:rate
         })
-        return sum;
     })
     .then(()=>{
-        console.log(sum)
-        return db.user_course.count({where:{courseId:courseId,rate:{[Op.not]:null}}})
+        return res.status(200).json({message:"done"})
     })
-    .then(counter=>{
-        count=counter;
-        return db.Course.findOne({where:{id:courseId}})
+    .catch(err=>{
+        if(!err.statsuCode){
+            err.statsuCode=500;
+        }
+        next(err);
+    })
+}
+
+exports.getCourseRate=(req,res,next)=>{
+    courseId=req.params.courseId;
+    let sumRate;
+    let countRate; 
+    return db.courseRate.sum('rate',{where:{courseId:courseId}})
+    .then(sumRates=>{
+        sumRate=sumRates;
+        return db.courseRate.count({where:{courseId:courseId}})
+    })
+    .then(countRates=>{
+        countRate=countRates
+        return db.course.findOne({where:{id:courseId}})
     })
     .then((course)=>{
-        course.rate=sum/count;
+        course.rate=sumRate/countRate;
         return course.save();
     })
-    .then(()=>{
-        return res.status(200).json({message:'done'})
+    .then(course=>{
+        return res.status(200).json({rate:course.rate})
     })
     .catch(err=>{
         if(!err.statusCode){
             err.statusCode=500;
+        }
+        next(err);
+    })
+}
+
+exports.Like=(req,res,next)=>{
+    const likeabelId=req.params.likeabelId;
+    const likeabelType=req.params.likeabelType;
+    return db.like.create({
+        userId:req.userId,
+        likeableId:likeabelId,
+        likeableType:likeabelType
+    })
+    .then(()=>{
+        return db.like.count({where:{likeableId:likeabelId,likeableType:likeabelType}})
+    })
+    .then(count=>{
+        return res.status(200).json({message:"like has been add",countLike:count})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500
+        }
+        next(err);
+    })
+}
+
+exports.unLike=(req,res,next)=>{
+    const likeabelId=req.params.likeabelId;
+    const likeabelType=req.params.likeabelType;
+    return db.like.findOne({where:{likeableId:likeabelId,likeableType:likeabelType}})
+    .then((like)=>{
+        return like.destroy();
+    })
+    .then(()=>{
+        return db.like.count({where:{likeableId:likeabelId,likeableType:likeabelType}})
+    })
+    .then(count=>{
+        return res.status(200).json({message:"like has been deleted",countLike:count})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500
         }
         next(err);
     })

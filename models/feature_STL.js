@@ -7,22 +7,10 @@ module.exports=(sequelize,DataTypes)=>{
             primaryKey:true
         },
         featureId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'feature',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         },
         stlId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'STL',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         }
     },{timestamps:false,freezeTableName:true})
 

@@ -36,6 +36,7 @@ module.exports=(sequelize,DataTypes)=>{
         User.hasMany(models.service)
         User.hasMany(models.course)
         User.belongsToMany(models.course,{through:models.courseRate})
+        User.belongsToMany(models.course,{through:models.payment})
         User.belongsToMany(models.answer,{through:models.user_answer})
         User.hasMany(models.comment)
         User.hasMany(models.STL)
@@ -44,6 +45,9 @@ module.exports=(sequelize,DataTypes)=>{
         User.belongsToMany(models.project,{through:models.like,as:'likeProject',foreignKey:'likeableId',constraints:false,scope:{likeableType:'Project'}})
         User.belongsToMany(models.lesson,{through:models.like,as:'likeLesson',foreignKey:'likeableId',constraints:false,scope:{likeableType:'Lesson'}})
         User.belongsToMany(models.comment,{through:models.like,as:'likeComment',foreignKey:'likeableId',constraints:false,scope:{likeableType:'Comment'}})
+        User.belongsToMany(models.STL,{through:models.order,foreignKey:'orderId',constraints:false,scope:{likeableType:'STL'}})
+        User.belongsToMany(models.project,{through:models.order,foreignKey:'orderId',constraints:false,scope:{likeableType:'Project'}})
+        
     }
 
 

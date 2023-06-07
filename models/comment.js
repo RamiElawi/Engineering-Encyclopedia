@@ -13,30 +13,13 @@ module.exports=(sequelize,DataTypes)=>{
             type:DataTypes.INTEGER
         },
         lessonId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'lesson',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         },
         userId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'user',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
-        },replayCommentId:{
-          type:DataTypes.INTEGER,
-          references:{
-              model:'comment',
-              key:'id'
-            },
-            onUpdate:'CASCADE',
-            onDelete:'SET NULL'
+            type:DataTypes.INTEGER
+        },
+        replayCommentId:{
+          type:DataTypes.INTEGER
       }
     },{timestamps:false,freezeTableName:true})
 

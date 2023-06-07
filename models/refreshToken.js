@@ -12,12 +12,6 @@ module.exports=(sequelize,DataTypes)=>{
         },
         userId:{
             type:DataTypes.INTEGER,
-            references:{
-                model:'user',
-                key:'id'
-            },
-            onUpdate:'CASCADE',
-            onDelete:'SET NULL'
         }
     },{timestamps:false,freezeTableName:true})
 

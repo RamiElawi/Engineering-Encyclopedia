@@ -15,14 +15,8 @@ module.exports=(sequelize,DataTypes)=>{
             allowNull:false
         },
         userId:{
-            type:DataTypes.INTEGER,
-                references:{
-                  model:'user',
-                  key:'id'
-                },
-                onUpdate:'CASCADE',
-                onDelete:'SET NULL'
-            }
+            type:DataTypes.INTEGER
+        }
     },{timestamps:false,freezeTableName:true});
 
     Like.associate=models=>{

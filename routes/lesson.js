@@ -22,7 +22,7 @@ router.delete('/deleteLesson/:lessonId',isAuth,lessonController.deleteLesson);
 
 router.get('/courseLessons/:courseId',isAuth,lessonController.getCourseLessons);
 
-router.get('/Video/:lessonId',isAuth,lessonController.getVideo);
+router.get('/Video/:lessonId',lessonController.getVideo);
 
 router.get('/:lessonId',isAuth,lessonController.getLessonId)
 

@@ -131,7 +131,15 @@ exports.deleteLesson=(req,res,next)=>{
 
 exports.getCourseLessons=(req,res,next)=>{
     const courseId=req.params.courseId;
-    db.lesson.findAll({where:{courseId:courseId}})
+    return db.payment.findOne({where:{paymentabelId:courseId,paymentabelType:'Course',userId:req.userId}})
+    .then(isPament=>{
+        if(!isPament){
+            const error=new Error('you are not payed yet ')
+            error.statusCode=422;
+            throw error;
+        }
+        return db.lesson.findAll({where:{courseId:courseId}})
+    })
     .then(lessons=>{
         if(!lessons.length){
             lessons='There are no lessons for this course';
@@ -148,36 +156,67 @@ exports.getCourseLessons=(req,res,next)=>{
 
 exports.getVideo=(req,res,next)=>{
     const lessonId=req.params.lessonId;
-    const range=req.headers.range;
+    // const range=req.headers.range;
     db.lesson.findOne({where:{id:lessonId}})
     .then(lesson=>{
-        if(!lesson){
-            const error=new Error('this lesson not found');
-            error.statusCode=404;
-            throw error
-        }
-        if(!range){
-            const error=new Error('Requires Range header');
-            error.statusCode=400;
-            throw error
-        }
+        // if(!lesson){
+        //     const error=new Error('this lesson not found');
+        //     error.statusCode=404;
+        //     throw error
+        // }
+        // if(!range){
+        //     const error=new Error('Requires Range header');
+        //     error.statusCode=400;
+        //     throw error
+        // }
 
-        const videoPath=lesson.Link;
-        const videoSize=fs.statSync(videoPath).size;
-        const CHUNK_SIZE=10**6;
-        const start=Number(range.replace(/\D/g,""));
-        const end=Math.min(start+CHUNK_SIZE,videoSize-1);
-        const contentLength=end-start+1;
-        const headers={
-            "Content-Range":`bytes ${start}-${end}/${videoSize}`,
-            "Accept-Ranges":"bytes",
-            "Content-Length":contentLength,
-            "Content-Type":"video/mp4"
+        // const videoPath=lesson.Link;
+        // const videoSize=fs.statSync(videoPath).size;
+        // console.log(videoSize)
+        // const CHUNK_SIZE=10**6;
+        // const start=Number(range.replace(/\D/g,""));
+        // console.log(start+CHUNK_SIZE)
+        // const end=Math.min(start+CHUNK_SIZE,videoSize-1);
+        // const contentLength=end-start+1;
+        // console.log(contentLength)
+        // const headers={
+        //     "Content-Range":`bytes ${start}-${end}/${videoSize}`,
+        //     "Accept-Ranges":"bytes",
+        //     "Content-Length":contentLength,
+        //     "Content-Type":"video/mp4"
+        // };
+        // res.writeHead(206,headers);
+        // const videoStream=fs.createReadStream(videoPath,{start,end});
+        // videoStream.pipe(res);
+        // // res.json({lesson:lesson})
+           const videoPath = lesson.Link;
+    const stat = fs.statSync(videoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+
+    if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1;
+        const chunksize = (end-start)+1;
+        const file = fs.createReadStream(videoPath, {start, end});
+        const head = {
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunksize,
+            'Content-Type': 'video/mp4',
         };
-        res.writeHead(206,headers);
-        const videoStream=fs.createReadStream(videoPath,{start,end});
-        videoStream.pipe(res);
-        // res.json({lesson:lesson})
+        res.writeHead(206, head);
+        file.pipe(res);
+    } else {
+        const head = {
+            'Content-Length': fileSize,
+            'Content-Type': 'video/mp4',
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(videoPath).pipe(res);
+    }
+        //   });
     })
     .catch(err=>{
         if(!err.statusCode){

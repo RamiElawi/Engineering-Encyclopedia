@@ -7,22 +7,10 @@ module.exports=(sequelize,DataTypes)=>{
             primaryKey:true
         },
         stlId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'STL',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         },
         projectId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'project',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         }
     },{timestamps:false,freezeTableName:true})
 

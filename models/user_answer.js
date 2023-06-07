@@ -9,22 +9,10 @@ module.exports=(sequelize,DataTypes)=>{
             primaryKey:true
         },
         uesrId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'user',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         },
         answerId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'answer',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         }
     })
 

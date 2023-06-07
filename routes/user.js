@@ -18,8 +18,6 @@ router.post('/changeImage',isAuth,upload.single('image'),userController.changeIm
 
 router.get('/Profile/:userId',isAuth,userController.getProfile)
 
-router.post('/updateRole/:userId',isAuth,checkRole(['admin']),userController.updateRole)
-
 router.get('/:userRole',isAuth,userController.getUsers)
 
 

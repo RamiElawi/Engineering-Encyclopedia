@@ -56,6 +56,7 @@ module.exports=(sequelize,DataTypes)=>{
         Project.belongsTo(models.user)
         Project.belongsToMany(models.user,{through:models.like,as:'likeUser',foreignKey:'likeableId',constraints:false,scope:{likeableType:'User'}})
         Project.hasMany(models.file,{foreignKey:'fileabelId',constraints:false,scope:{fileableType:'Project'}})
+        Project.belongsToMany(models.user,{through:models.order,foreignKey:'orderId',constraints:false,scope:{likeableType:'User'}})
     }
 
     return Project

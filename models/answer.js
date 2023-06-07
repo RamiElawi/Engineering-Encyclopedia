@@ -11,16 +11,9 @@ module.exports=(sequelize,DataTypes)=>{
             allowNull:false
         },
         questionId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'question',
-                key:'id'
-              },
-              
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         }
-    })
+    },{timestamps:false,freezeTableName:true})
     Answer.assoicate=models=>{
         Answer.belongsTo(models.question)
         Answer.belongsToMany(models.user,{through:models.user_answer})

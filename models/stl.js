@@ -39,6 +39,9 @@ module.exports=(sequelize,DataTypes)=>{
         image:{
             type:DataTypes.STRING,
             allowNull:false
+        },
+        userId:{
+            type:DataTypes.INTEGER
         }
     },{timestamps:false,freezeTableName:true})
 
@@ -51,7 +54,7 @@ module.exports=(sequelize,DataTypes)=>{
         STL.belongsToMany(models.feature,{through:models.feature_STL})
         STL.belongsToMany(models.user,{through:models.like,as:'likeUser',foreignKey:'likeableId',constraints:false,scope:{likeableType:'User'}})
         STL.hasMany(models.file,{foreignKey:'fileabelId',constraints:false,scope:{fileableType:'STL'}})
-        
+        STL.belongsToMany(models.user,{through:models.order,foreignKey:'orderId',constraints:false,scope:{orderType:'User'}})
     }
 
     return STL;

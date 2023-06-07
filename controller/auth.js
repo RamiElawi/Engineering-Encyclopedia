@@ -44,7 +44,7 @@ exports.postLogin=(req,res,next)=>{
    const email=req.body.email;
    const password=req.body.password;
    let correctUser;
-   db.user.findOne({where:{email:email}})
+   return db.user.findOne({where:{email:email}})
    .then(user=>{
     if(!user){
         const error=new Error('This email is not found');
@@ -63,7 +63,7 @@ exports.postLogin=(req,res,next)=>{
     const {accessToken,refreshToken}=generateToken(correctUser);
     // console.log(correctUser)
     
-    res.status(200).json({message:"correct login",token:accessToken,refreshToken:refreshToken})
+    return res.status(200).json({message:"correct login",token:accessToken,refreshToken:refreshToken})
    })
    .catch(err=>{
     if(!err.statusCode){

@@ -29,6 +29,7 @@ exports.changeImage=(req,res,next)=>{
 
 exports.getProfile=(req,res,next)=>{
     const userId=req.params.userId;
+    let fileOwner=false;
     db.user.findOne({where:{id:userId}})
     .then(user=>{
         if(!user){
@@ -36,7 +37,10 @@ exports.getProfile=(req,res,next)=>{
             error.statusCode=404;
             throw error
         }
-        res.status(200).json({user:user})
+        if(req.userId==userId){
+            fileOwner=true;
+        }
+        return res.status(200).json({user:user,fileOwner:fileOwner})
     })
     .catch(err=>{
         if(!err.statusCode){
@@ -46,29 +50,6 @@ exports.getProfile=(req,res,next)=>{
     })
 }
 
-exports.updateRole=(req,res,next)=>{
-    const role=req.body.role;
-    const userId=req.params.userId;
-    db.user.findOne({where:{id:userId}})
-    .then(user=>{
-        if(!user){
-            const error=new Error('this user is not found');
-            err.statusCode=404;
-            throw error;
-        }
-        user.role=role;
-        return user.save();
-    })
-    .then(user=>{
-        return res.status(200).json({message:`User ${user.firstName} ${user.lastName} has become the validity ${role}`})
-    })
-    .catch(err=>{
-        if(!err.statusCode){
-            err.statuscode=500;
-        }
-        next(err);
-    })
-}
 
 exports.getUsers=(req,res,next)=>{
     const userRole=req.params.userRole;

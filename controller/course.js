@@ -1,6 +1,9 @@
 const db=require('../models')
 const Op=require('sequelize').Op;
 
+// const stripe=require('stripe')(process.env.API_KEY_PAYMENT)
+
+
 // create one course
 exports.addCourse=(req,res,next)=>{
     const courseName=req.body.courseName;
@@ -134,3 +137,77 @@ exports.getMyCourses=(req,res,next)=>{
         next(err);
     })
 } 
+
+
+exports.Payment=(req,res,next)=>{
+    const amount=req.body.amount;
+    const currency=req.body.currency;
+    const description=req.body.description;
+    const source=req.body.source;   
+    const courseId=req.body.courseId;
+    let Payment;
+    
+    return stripe.charges.create({
+        amount,
+        currency,
+        description,
+        source
+    })
+    .then(payment=>{
+        Payment=payment;
+        return db.payment.create({
+            userId:req.userId,
+            paymentableId:courseId,
+            paymentType:'Course',
+        })
+    })
+    .then(()=>{
+        return db.lesson.findOne({where:{courseId:courseId,lessonId:1}})
+    })
+    .then(lesson=>{
+        lesson.done=true;
+        return lesson.save(); 
+    })
+    .then(()=>{
+        return res.status(200).json({payment:Payment,success:true})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+    
+}
+
+exports.Search=(req,res,next)=>{
+    const search=req.body.search;
+    return db.course.findAll({where:{courseName:{[Op.like]: `%${search}%`}}})
+    .then(courses=>{
+        return res.status(200).json({courses:courses})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500
+        }
+        next(err);
+    })
+}
+
+exports.filter=(req,res,next)=>{
+    const filterName=req.body.filterName;
+    return db.course.findAll({where:{
+        [Op.or]:[
+            {courseName:{[Op.like]:`%${filterName}%`}}
+        ]
+    }}) 
+    .then(recordes=>{
+        return res.status(200).json({recordes:recordes})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}

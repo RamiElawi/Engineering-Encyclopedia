@@ -26,13 +26,7 @@ module.exports=(sequelize,DataTypes)=>{
             type:DataTypes.INTEGER
         },
         courseId:{
-            type:DataTypes.INTEGER,
-            references:{
-                model:'course',
-                key:'id'
-              },
-              onUpdate:'CASCADE',
-              onDelete:'SET NULL'
+            type:DataTypes.INTEGER
         },
         lessonId:{
             type:DataTypes.INTEGER

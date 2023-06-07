@@ -4,11 +4,11 @@ const isAuth=require('../util/isAuth')
 const checkRole=require('../util/checkRole')
 
 
-router.get('/Services',isAuth,getDataController.getServices);
+router.get('/Services',getDataController.getServices);
 
-router.get('/Services/:serviceId',isAuth,getDataController.getServiceId);
+router.get('/Services/:serviceId',getDataController.getServiceId);
 
-router.get('/STL',isAuth,getDataController.getSTL);
+router.get('/STL',getDataController.getSTL);
 
 router.get('/STL/:stlId',isAuth,getDataController.getSTLId);
 
@@ -22,23 +22,20 @@ router.get('/feature/:featureId',isAuth,getDataController.getFeaturelId)
 
 router.get('/downloadSTLFile/:stlId',isAuth,getDataController.downloadSTLFile)
 
-router.get('/stlLike/:stlId',isAuth,getDataController.stlLike)
+router.get('/Project',getDataController.getProject);
 
-router.get('/stlUnLike/:stlId',isAuth,getDataController.stlUnLike)
+router.get('/Project/:projectId',getDataController.getProjectId);
 
-router.get('/Project',isAuth,getDataController.getProject);
+router.get('/Course',getDataController.getCourses)
 
-router.get('/Project/:projectId',isAuth,getDataController.getPrjectId);
-
-router.get('/projectLike/:stlId',isAuth,getDataController.projectLike);
-
-router.get('/projectUnLike/:stlId',isAuth,getDataController.projectUnLike);
-
-router.get('/Course',isAuth,getDataController.getCourses)
-
-router.get('/Course/:courseId',isAuth,getDataController.getCourseId)
+router.get('/Course/:courseId',getDataController.getCourseId)
 
 router.post('/rate/:courseId',isAuth,getDataController.addRate)
 
+router.get('/getCourseRate/:courseId',isAuth,getDataController.getCourseRate)
+
+router.post('/like/:likeabelId/:likeabelType',isAuth,getDataController.Like)
+
+router.post('/unlike/:likeabelId/:likeabelType',isAuth,getDataController.unLike)
 
 module.exports=router;
