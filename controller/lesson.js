@@ -1,34 +1,26 @@
 const db=require('../models') 
 const fs=require('fs');
+const {Op}=require('sequelize')
 exports.addLesson=(req,res,next)=>{
     const lessonName=req.body.lessonName;
     const description=req.body.description;
     const courseId=req.body.courseId
     const fileNumber=2;
-    let requiredLesson;
     if(Object.keys(req.files).length<fileNumber){
         const error=new Error('don\'t have any file to upload');
         error.statusCode=422;
         throw error;
     }
-    return db.lesson.create({
-        lessonName:lessonName,
-        description:description,
-        Link:req.files.vedio[0].path,
-        lessonImage:req.files.image[0].path,
-        courseId:courseId
-    })
-    .then(lesson=>{
-        requiredLesson=lesson;
-        return db.course.findOne({where:{id:courseId}})
-    })
-    .then(course=>{
-        course.lessonNumber+=1;
-        return course.save()
-    })
-    .then((course)=>{
-        requiredLesson.lessonId=course.lessonNumber
-        return requiredLesson.save()
+    db.lesson.max('lessonId',{where:{courseId:courseId}})
+    .then(max=>{
+        return db.lesson.create({
+            lessonName:lessonName,
+            description:description,
+            Link:req.files.vedio[0].path,
+            lessonImage:req.files.image[0].path,
+            courseId:courseId,
+            lessonId:max +1
+        })
     })
     .then(()=>{
         return res.status(200).json({message:'lesson had been created'})
@@ -39,6 +31,18 @@ exports.addLesson=(req,res,next)=>{
         }
         next(err);
     })
+    // .then(lesson=>{
+        // requiredLesson=lesson;
+        // return db.course.findOne({where:{id:courseId}})
+    // })
+    // .then(course=>{
+    //     course.lessonNumber+=1;
+    //     return course.save()
+    // })
+    // .then((course)=>{
+    //     requiredLesson.lessonId=course.lessonNumber
+    //     return requiredLesson.save()
+    // })
 }
 
 exports.updateLesson=(req,res,next)=>{
@@ -102,7 +106,7 @@ exports.deleteLesson=(req,res,next)=>{
             throw error;
         }
         requiredCourse=course;
-        return db.lesson.findOne({where:{id:lessonId}})
+        return db.lesson.findOne({where:{id:lessonId,courseId:courseId}})
     })
     .then(lesson=>{
         if(!lesson){
@@ -114,9 +118,17 @@ exports.deleteLesson=(req,res,next)=>{
         require('../util/clearImage').clearImage(lesson.lessonImage);
         return lesson.destroy();
     })
-    .then(()=>{
-        requiredCourse.lessonNumber-=1;
-        return requiredCourse.save();
+    .then((lesson)=>{
+        console.log(lesson)
+        return db.lesson.findAll({where:{courseId:courseId,lessonId:{[Op.gt]:lesson.lessonId}}})
+    })
+    .then(lessons=>{
+        console.log('rami')
+        console.log(lessons)
+        for(const lessonToUpdate of lessons){
+            lessonToUpdate.lessonId-=1
+            lessonToUpdate.save();
+        }
     })
     .then(()=>{
         return res.status(200).json({message:'lesson had been deleted'})

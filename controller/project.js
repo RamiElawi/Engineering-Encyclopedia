@@ -5,7 +5,7 @@ const {Op}=require('sequelize')
 exports.addProject=(req,res,next)=>{
     const projectName=req.body.projectName;
     const description=req.body.description;
-    const stlId=req.body.stlId;
+    const stlId=parseInt(req.body.stlId);
     const width=req.body.width;
     const length=req.body.length;
     const height=req.body.height;
@@ -85,7 +85,7 @@ exports.updateProject=(req,res,next)=>{
     const length=req.body.length;
     const width=req.body.width;
     const height=req.body.height;
-    let stlId=req.body.stlId;
+    let stlId=parseINt(req.body.stlId);
     let requiredSTLs=new Array();
     let requiredProject;
     let i=0;

@@ -39,6 +39,9 @@ module.exports=(sequelize,DataTypes)=>{
         lessonNumber:{
             type:DataTypes.INTEGER,
             defaultValue:0
+        },
+        createdAt:{
+          type:DataTypes.DATE
         }
 },{timestamps:false,freezeTableName:true})
     Course.associate=models=>{
@@ -47,6 +50,11 @@ module.exports=(sequelize,DataTypes)=>{
         Course.belongsToMany(models.user,{through:models.courseRate})
         Course.belongsToMany(models.user,{through:models.payment})
     }
+
+
+
+    
+
 
     return Course;
 }

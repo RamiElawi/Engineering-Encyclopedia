@@ -28,6 +28,12 @@ module.exports=(sequelize,DataTypes)=>{
         },
         role:{
             type:DataTypes.STRING,
+        },
+        resetToken:{
+            type:DataTypes.STRING
+        },
+        resetTokenExpiration:{
+            type:DataTypes.DATE
         }
     },{timestamps:false,freezeTableName:true})
     

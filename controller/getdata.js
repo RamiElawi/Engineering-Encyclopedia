@@ -375,3 +375,67 @@ exports.unLike=(req,res,next)=>{
         next(err);
     })
 }
+
+exports.getCountCourse=(req,res,next)=>{
+    return db.course.count()
+    .then(count=>{
+        return res.status(200).json({count:count})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}
+exports.getCountProject=(req,res,next)=>{
+    return db.project.count()
+    .then(count=>{
+        return res.status(200).json({count:count})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}
+exports.getCountSTL=(req,res,next)=>{
+    return db.STL.count()
+    .then(count=>{
+        return res.status(200).json({count:count})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}
+
+exports.mostRatedCourse=(req,res,next)=>{
+    const Limit=parseInt(req.params.number);
+    return db.course.findAll({order:[['rate','DESC']],limit:Limit})
+    .then(course=>{
+        return res.status(200).json({courses:course})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}
+exports.mostRatedCourseOneUser=(req,res,next)=>{
+    const Limit=parseInt(req.params.number);
+    return db.course.findAll({order:[['rate','DESC']],limit:Limit})
+    .then(course=>{
+        return res.status(200).json({courses:course})
+    })
+    .catch(err=>{
+        if(!err.statusCode){
+            err.statusCode=500;
+        }
+        next(err);
+    })
+}

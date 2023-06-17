@@ -38,6 +38,9 @@ module.exports=(sequelize,DataTypes)=>{
         },
         onDelete:'SET NULL',
         onUpdate:'CASCADE'
+      },
+      createdAt:{
+        type:DataTypes.DATE
       }
     },{timestamps:false,freezeTableName:true})
 

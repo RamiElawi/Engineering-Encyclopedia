@@ -9,9 +9,9 @@ exports.addSTL=(req,res,next)=>{
     const height=req.body.height;
     const length=req.body.length;
     const price=req.body.price;
-    const materialId=req.body.materialId;
-    const colorName=req.body.colorName;
-    const featureId=req.body.featureId;
+    const materialId=parseInt(req.body.materialId);
+    const colorName=parseInt(req.body.colorName);
+    const featureId=parseInt(req.body.featureId);
     let requiredSTL;
     const fileNumber=4;
    
@@ -126,9 +126,9 @@ exports.updateSTL=(req,res,next)=>{
     const height=req.body.height;
     const length=req.body.length;
     const price=req.body.price;
-    const materialId=req.body.materialId;
-    const colorName=req.body.colorName;
-    const featureId=req.body.featureId;
+    const materialId=parseInt( req.body.materialId);
+    const colorName=parseInt(req.body.colorName);
+    const featureId=parseInt(req.body.featureId);
     // find stl by id
     db.STL.findOne({where:{id:stlId}})
     .then(stl=>{

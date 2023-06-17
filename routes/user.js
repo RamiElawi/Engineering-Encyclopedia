@@ -20,5 +20,7 @@ router.get('/Profile/:userId',isAuth,userController.getProfile)
 
 router.get('/:userRole',isAuth,userController.getUsers)
 
+router.post('/contactUs',isAuth,userController.contactUs)
+
 
 module.exports=router;

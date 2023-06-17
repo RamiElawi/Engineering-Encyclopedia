@@ -43,5 +43,7 @@ module.exports=(sequelize,DataTypes)=>{
         Lesson.belongsToMany(models.user,{through:models.like,as:'likeUser',foreignKey:'likeableId',constraints:false,scope:{likeableType:'User'}})
         
     }
+
+
     return Lesson;
 }

@@ -1,4 +1,13 @@
-// const User=require('../models/user');
+const db=require('../models')
+const nodemailer=require('nodemailer')
+
+const transporter=nodemailer.createTransport({
+        service:'gmail',
+        auth:{
+            user:'elawirse@gmail.com',
+            pass:'umpguizdudmypmvu'
+        }
+})
 
 exports.changeImage=(req,res,next)=>{
     db.user.findOne({where:{id:req.userId}})
@@ -65,5 +74,24 @@ exports.getUsers=(req,res,next)=>{
             err.statusCode=500;
         }
         next(err);
+    })
+}
+
+exports.contactUs=(req,res,next)=>{
+    const text=req.body.text;
+    const email=req.body.email;
+
+    const mailOption={
+        from:'elawirse@gmail.com',
+        to:email,
+        subject:'contact us',
+        text:text
+    }
+    transporter.sendMail(mailOption,(err,info)=>{
+        if(err){
+            console.log(err)
+            throw err
+        }
+        console.log(info);
     })
 }

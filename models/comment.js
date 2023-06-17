@@ -20,6 +20,9 @@ module.exports=(sequelize,DataTypes)=>{
         },
         replayCommentId:{
           type:DataTypes.INTEGER
+      },
+      createdAt:{
+        type:DataTypes.DATE
       }
     },{timestamps:false,freezeTableName:true})
 

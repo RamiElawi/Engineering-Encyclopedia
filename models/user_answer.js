@@ -14,7 +14,7 @@ module.exports=(sequelize,DataTypes)=>{
         answerId:{
             type:DataTypes.INTEGER
         }
-    })
+    },{timestamps:false,freezeTableName:true})
 
     user_answer.associate=models=>{
         user_answer.belongsTo(models.user)

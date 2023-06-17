@@ -34,11 +34,31 @@ router.post('/signup',
 ]
 ,authController.postSignup);
 
+
+
+
 router.post('/login',authController.postLogin)
 
 router.post('/refreshToken',authController.refreshToken)
 
-// router.post('/resetPassword',authController)
+router.post('/resetPassword',authController.resetPassword)
+
+router.post('/newPassword/:resetToken',[
+    body('password')
+    .trim()
+    .isLength({min:6})
+    ,body('confirmPassword')
+    .trim()
+    .isLength({min:6})
+    .custom((value,{req})=>{
+        if(req.body.password!=value){
+            const err=new Error('this password is not match')
+            err.statusCode=422;
+            throw err;
+        }
+        return true;
+    })
+],authController.newPassword)
 
 // router.post('/changePassword',
 // [

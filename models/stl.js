@@ -42,6 +42,9 @@ module.exports=(sequelize,DataTypes)=>{
         },
         userId:{
             type:DataTypes.INTEGER
+        },
+        createdAt:{
+          type:DataTypes.DATE
         }
     },{timestamps:false,freezeTableName:true})
 

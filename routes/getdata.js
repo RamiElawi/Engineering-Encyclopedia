@@ -38,4 +38,15 @@ router.post('/like/:likeabelId/:likeabelType',isAuth,getDataController.Like)
 
 router.post('/unlike/:likeabelId/:likeabelType',isAuth,getDataController.unLike)
 
+router.get('/getCountCourse',getDataController.getCountCourse)
+
+router.get('/getCountProject',getDataController.getCountProject)
+
+router.get('/getCountSTL',getDataController.getCountSTL)
+
+router.get('/mostRatedCourse/:number',getDataController.mostRatedCourse)
+
+router.get('/mostRatedCourseOneUser/:number',isAuth,getDataController.mostRatedCourseOneUser)
+
+
 module.exports=router;

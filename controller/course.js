@@ -1,7 +1,7 @@
 const db=require('../models')
 const Op=require('sequelize').Op;
 
-// const stripe=require('stripe')(process.env.API_KEY_PAYMENT)
+const stripe=require('stripe')("sk_test_51LkrmJHr5O4xNa164Fei9zYV60hJ4tdu951vjvNN4o7RqX5N4ABLGdqzyt3qm12QyKi7SmuIeoShhIgeqLqbydBj00RNk02B0J")
 
 
 // create one course
@@ -157,8 +157,9 @@ exports.Payment=(req,res,next)=>{
         Payment=payment;
         return db.payment.create({
             userId:req.userId,
-            paymentableId:courseId,
-            paymentType:'Course',
+            courseId:courseId,
+            // paymentableId:courseId,
+            // paymentType:'Course',
         })
     })
     .then(()=>{
