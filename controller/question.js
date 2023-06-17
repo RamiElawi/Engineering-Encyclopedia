@@ -148,52 +148,56 @@ exports.getQuestion=(req,res,next)=>{
 exports.chooseAnswer=(req,res,next)=>{
     const answerId=req.body.answerId;
     const lessonId=req.body.lessonId;
-    let numberRightAnswers;
-    return db.lesson.findOne({where:{id:lessonId}})
-    .then(()=>{
-        return answerId.forEach(ele=>{
-            return db.user_answer.create({
-                userId:req.userId,
-                answerId:ele
-            })
-            .then(()=>{
-                return db.answer.findOne({where:{id:ele}})
-            })
-            .then(answer=>{
-                return db.question.findOne({where:{id:answer.questionId}})
-            })
-            .then(Onequestion=>{
-                if(Onequestion.rightAnswer == ele){
-                    numberRightAnswers+=1;
+    let numberRightAnswers=0;
+    let rightAnswers=[]; 
+    return db.question.findAll({where:{lessonid:lessonId}})
+    .then(questions=>{
+        questions.forEach(question=>{
+            rightAnswers.push(question.rightAnswer)
+        })
+        return rightAnswers
+    })
+    .then(rightAnswers=>{
+        answerId.forEach(answer=>{
+            rightAnswers.forEach(rightAnswer=>{
+                if(answer == rightAnswer){
+                    numberRightAnswers++;
                 }
             })
         })
+        return numberRightAnswers;
     })
-    .then((numberRightAnswers)=>{
-        console.log(numberRightAnswers)
+    .then(()=>{
         return db.question.count({where:{lessonId:lessonId}})
     })
-    .then((counter)=>{
-        console.log(counter,numberRightAnswers)
-        let halfNumberQuestion=counter/2;
+    .then(questionCount=>{
+        let halfNumberQuestion=questionCount/2;
         if(numberRightAnswers >= halfNumberQuestion){
-            db.lesson.findOne({where:{id:lessonId+1}})
+            return db.lesson.findOne({where:{id:lessonId+1}})
             .then(lesson=>{
-                lesson.done=true;
+                if(!lesson){
+                    return res.status(200).json({message:'you are pass the course'})
+                }
+                lesson.done=1;
                 lesson.save();
+                return res.status(200).json({message:"you are pass the exam and you can see the next lesson"})
             })
-            .then(()=>{
-                return res.status(200).json({message:`you have completed the exam with ${numberRightAnswers} markets  you can go to the next lesson`})
+            .catch(err=>{
+                if(err.statusCode){
+                    err.statusCode=500;
+                }
+                next(err);
             })
         }else{
-            return res.status(200).json({message:`you did not completed the exam and your score is ${numberRightAnswers}.You must repeat the lesson retake the exam`})
+            return res.status(200).json({message:'you did not pass the exam and you should retake the exam'})
         }
     })
     .catch(err=>{
-        if(!err.statusCode){
+        if(err.statusCode){
             err.statusCode=500;
         }
         next(err);
     })
+
 }
 

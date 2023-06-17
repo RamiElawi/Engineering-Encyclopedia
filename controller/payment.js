@@ -1,4 +1,4 @@
-const Stripe=require('stripe')();
+const Stripe=require('stripe')('sk_test_51LkrmJHr5O4xNa164Fei9zYV60hJ4tdu951vjvNN4o7RqX5N4ABLGdqzyt3qm12QyKi7SmuIeoShhIgeqLqbydBj00RNk02B0J');
 const db=require('../models')
 exports.payment=(req,res,next)=>{
     let Session;
@@ -13,8 +13,8 @@ exports.payment=(req,res,next)=>{
         Session=session
         return db.order.create({
             userId:req.userId,
-            orderId:req.body.orderId,
-            orderType:req.body.orderType,
+            orderId:req.params.itemId,
+            orderType:req.params.itemType,
             color:req.body.color,
             length:req.body.length,
             width:req.body.width,

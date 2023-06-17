@@ -13,7 +13,7 @@ const getDataRouter=require('./getdata');
 const userRouter=require('./user')
 const questionRouter=require('./question')
 const featureRouter=require('./feature')
-const orderRouter=require('./order')
+const paymentRouter=require('./payment')
 
 
 route.use('/admin/auth',authRoutes);
@@ -37,7 +37,7 @@ route.use('/getData',getDataRouter)
 route.use('/question',questionRouter)
 route.use('/admin/feature',featureRouter)
 route.use('/feature',featureRouter)
-route.use('/order',orderRouter)
+route.use('/payment',paymentRouter)
 
 
 module.exports=route;

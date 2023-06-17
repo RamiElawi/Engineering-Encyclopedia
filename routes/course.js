@@ -26,6 +26,8 @@ router.get('/myCourses',isAuth,courseController.getMyCourses)
 
 router.get('/search',isAuth,courseController.Search)
 
+router.get('/filter',isAuth,courseController.filter)
+
 router.post('/payments',isAuth,courseController.Payment)
 
 

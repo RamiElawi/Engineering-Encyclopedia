@@ -141,7 +141,7 @@ exports.getMyCourses=(req,res,next)=>{
 
 exports.Payment=(req,res,next)=>{
     const amount=req.body.amount;
-    const currency=req.body.currency;
+    const currency='usd';
     const description=req.body.description;
     const source=req.body.source;   
     const courseId=req.body.courseId;
