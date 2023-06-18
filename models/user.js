@@ -40,6 +40,7 @@ module.exports=(sequelize,DataTypes)=>{
     User.associate=models=>{
         User.hasOne(models.refreshToken)
         User.hasMany(models.service)
+        User.hasMany(models.order)
         User.hasMany(models.course)
         User.belongsToMany(models.course,{through:models.courseRate})
         User.belongsToMany(models.course,{through:models.payment})
@@ -53,7 +54,6 @@ module.exports=(sequelize,DataTypes)=>{
         User.belongsToMany(models.comment,{through:models.like,as:'likeComment',foreignKey:'likeableId',constraints:false,scope:{likeableType:'Comment'}})
         User.belongsToMany(models.STL,{through:models.order,foreignKey:'orderId',constraints:false,scope:{likeableType:'STL'}})
         User.belongsToMany(models.project,{through:models.order,foreignKey:'orderId',constraints:false,scope:{likeableType:'Project'}})
-        
     }
 
 

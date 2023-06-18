@@ -20,7 +20,8 @@ exports.payment=(req,res,next)=>{
             width:req.body.width,
             height:req.body.height,
             material:req.body.material,
-            address:req.body.address
+            address:req.body.address,
+            ownerId:req.body.ownerId
         })
     })
     .then(()=>{
@@ -35,7 +36,7 @@ exports.payment=(req,res,next)=>{
 }
 
 exports.getOrder=(req,res,next)=>{
-    return db.order.findAll({where:{userId:req.userId}})
+    return db.order.findAll({where:{ownerId:req.userId}})
     .then(orders=>{
         return res.status(200).json({orders:orders})
     }) 

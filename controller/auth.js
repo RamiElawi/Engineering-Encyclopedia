@@ -6,6 +6,7 @@ require('dotenv').config();
 const db=require('../models')
 const nodemailer=require('nodemailer')
 const crypto=require('crypto');
+const {Op}=require('sequelize')
 
 const transporter=nodemailer.createTransport({
     service:'gmail',
@@ -166,6 +167,8 @@ exports.resetPassword=(req,res,next)=>{
                 }
                 console.log(info);
             })
+            console.log(user.resetToken)
+            return res.status(200).json({message:'an email was send to your account '})
         })
         .catch(err=>{
             if(!err.statusCode){
@@ -177,15 +180,24 @@ exports.resetPassword=(req,res,next)=>{
 }
 
 exports.newPassword=(req,res,next)=>{
+    const errors=validationResult(req);
+    if(!errors.isEmpty()){
+        const error =new Error('validation faild');
+        error.statusCode=422;
+        error.data=errors.array();
+        throw error;
+    }
     const newPassword=req.body.newPassword;
     const restToken=req.params.resetToken;
-    return db.user.findOne({where:{id:req.userId,restToken:restToken,resetTokenExpiration:{[Op.gt]:Date.now()}}})
+    let requiredUser;
+    return db.user.findOne({where:{resetToken:restToken,resetTokenExpiration:{[Op.gt]:Date.now()}}})
     .then(user=>{
         if(!user){
             const error=new Error('this user is not found')
             error.statusCode=422;
             throw error;
         }
+        requiredUser=user;
         return bcrypt.hash(newPassword,12)
     })
     .then(hashPassword=>{

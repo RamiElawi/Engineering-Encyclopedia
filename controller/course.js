@@ -141,25 +141,19 @@ exports.getMyCourses=(req,res,next)=>{
 
 exports.Payment=(req,res,next)=>{
     const amount=req.body.amount;
-    const currency='usd';
-    const description=req.body.description;
-    const source=req.body.source;   
+    const currency='usd';   
     const courseId=req.body.courseId;
     let Payment;
     
-    return stripe.charges.create({
+    return stripe.paymentIntents.create({
         amount,
         currency,
-        description,
-        source
     })
     .then(payment=>{
         Payment=payment;
         return db.payment.create({
             userId:req.userId,
-            courseId:courseId,
-            // paymentableId:courseId,
-            // paymentType:'Course',
+            courseId:courseId
         })
     })
     .then(()=>{
@@ -170,7 +164,7 @@ exports.Payment=(req,res,next)=>{
         return lesson.save(); 
     })
     .then(()=>{
-        return res.status(200).json({payment:Payment,success:true})
+        return res.status(200).json({client_secret:Payment.client_secret})
     })
     .catch(err=>{
         if(!err.statusCode){
@@ -178,7 +172,6 @@ exports.Payment=(req,res,next)=>{
         }
         next(err);
     })
-    
 }
 
 exports.Search=(req,res,next)=>{

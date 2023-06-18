@@ -44,14 +44,14 @@ router.post('/refreshToken',authController.refreshToken)
 router.post('/resetPassword',authController.resetPassword)
 
 router.post('/newPassword/:resetToken',[
-    body('password')
+    body('newPassword')
     .trim()
     .isLength({min:6})
     ,body('confirmPassword')
     .trim()
     .isLength({min:6})
     .custom((value,{req})=>{
-        if(req.body.password!=value){
+        if(req.body.newPassword!=value){
             const err=new Error('this password is not match')
             err.statusCode=422;
             throw err;

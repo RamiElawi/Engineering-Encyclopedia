@@ -39,12 +39,22 @@ module.exports=(sequelize,DataTypes)=>{
         onDelete:'SET NULL',
         onUpdate:'CASCADE'
       },
+      ownerId:{
+        type:DataTypes.INTEGER,
+        references:{
+          model:'user',
+          key:'id'
+        },
+        onDelete:'SET NULL',
+        onUpdate:'CASCADE'
+      },
       createdAt:{
         type:DataTypes.DATE
       }
     },{timestamps:false,freezeTableName:true})
 
     order.associate=models=>{
+      order.belongsTo(models.user)
       order.belongsTo(models.user)
     }
 
