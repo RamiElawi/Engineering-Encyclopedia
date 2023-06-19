@@ -143,15 +143,15 @@ exports.deleteLesson=(req,res,next)=>{
 
 exports.getCourseLessons=(req,res,next)=>{
     const courseId=req.params.courseId;
-    return db.payment.findOne({where:{paymentabelId:courseId,paymentabelType:'Course',userId:req.userId}})
-    .then(isPament=>{
-        if(!isPament){
-            const error=new Error('you are not payed yet ')
-            error.statusCode=422;
-            throw error;
-        }
-        return db.lesson.findAll({where:{courseId:courseId}})
-    })
+    // return db.payment.findOne({where:{courseId:courseId,userId:req.userId}})
+    // .then(isPament=>{
+    //     if(!isPament){
+    //         const error=new Error('you are not payed yet ')
+    //         error.statusCode=422;
+    //         throw error;
+    //     }
+    return db.lesson.findAll({where:{courseId:courseId}})
+    // })
     .then(lessons=>{
         if(!lessons.length){
             lessons='There are no lessons for this course';
