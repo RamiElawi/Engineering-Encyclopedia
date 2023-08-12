@@ -9,12 +9,14 @@ exports.addSTL=(req,res,next)=>{
     const height=req.body.height;
     const length=req.body.length;
     const price=req.body.price;
-    const materialId=parseInt(req.body.materialId);
-    const colorName=parseInt(req.body.colorName);
-    const featureId=parseInt(req.body.featureId);
+    const materialId=req.body.materialId;
+    const colorName=req.body.colorName;
+    const featureId=req.body.featureId;
     let requiredSTL;
     const fileNumber=4;
    
+    console.log(featureId)
+    console.log(materialId)
 // if user don't choose 4 files show error 
     if(Object.keys(req.files).length < fileNumber){
         const error=new Error('Did not choose Files');

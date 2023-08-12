@@ -168,7 +168,7 @@ exports.downloadSTLFile=(req,res,next)=>{
             error.statusCode=422;
             throw error;
         }
-        return db.File.findAll({where:{stlId:stl.id}})
+        return db.file.findAll({where:{fileabelId:stl.id,fileableType:'STL'}})
     })
     .then(files=>{
         let fileNames=new Array();
@@ -176,7 +176,7 @@ exports.downloadSTLFile=(req,res,next)=>{
             fileNames.push(element.path);
         });
         const filePaths=fileNames.map(name=>{
-            return path.join(__dirname,'public','stlImage',name)
+            return path.join(name)
         })
         Promise.all(
             filePaths.map((filePath)=>{

@@ -12,7 +12,7 @@ const transporter=nodemailer.createTransport({
     service:'gmail',
     auth:{
         user:'elawirse@gmail.com',
-        pass:'umpguizdudmypmvu'
+        pass:''
     }
 })
 
@@ -180,13 +180,7 @@ exports.resetPassword=(req,res,next)=>{
 }
 
 exports.newPassword=(req,res,next)=>{
-    const errors=validationResult(req);
-    if(!errors.isEmpty()){
-        const error =new Error('validation faild');
-        error.statusCode=422;
-        error.data=errors.array();
-        throw error;
-    }
+    
     const newPassword=req.body.newPassword;
     const restToken=req.params.resetToken;
     let requiredUser;

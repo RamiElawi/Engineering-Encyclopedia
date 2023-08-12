@@ -1,13 +1,7 @@
 const db=require('../models')
 const nodemailer=require('nodemailer')
 
-const transporter=nodemailer.createTransport({
-        service:'gmail',
-        auth:{
-            user:'elawirse@gmail.com',
-            pass:'umpguizdudmypmvu'
-        }
-})
+
 
 exports.changeImage=(req,res,next)=>{
     db.user.findOne({where:{id:req.userId}})
@@ -81,8 +75,15 @@ exports.contactUs=(req,res,next)=>{
     const text=req.body.text;
     const email=req.body.email;
 
+    const transporter=nodemailer.createTransport({
+        service:'gmail',
+        auth:{
+            user:'elawirse@gmail.com',
+            pass:''
+        }
+})
     const mailOption={
-        from:'elawirse@gmail.com',
+        from:"elawirse@gmail.com",
         to:email,
         subject:'contact us',
         text:text
@@ -94,4 +95,13 @@ exports.contactUs=(req,res,next)=>{
         }
         console.log(info);
     })
+    // .then(()=>{
+    //     return res.status(200).json({message:"done"})
+    // })
+    // .catch(err=>{
+    //     if(!err.statusCode){
+    //         err.statusCode=500;
+    //     }
+    //     next(err);
+    // })
 }
